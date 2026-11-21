@@ -94,6 +94,8 @@ SPEC 九条要求逐条对齐：
 
 **代价**：加载顺序变得重要了（`core → chat → ui`）。函数声明会提升，但顶层 `const` / `let` 不会跨文件提升，所以顺序不能乱。已在 `index.html` 注释里写明。
 
+> ⚠️ **本节结论已被同日补丁推翻，见「八、同日补丁」第 1 条。** 拆分留下了「必须整包解压 / 不能单独下载 index.html」的隐性前提，最终改回单文件。历史记录保留在这里，供复盘。
+
 ---
 
 ## 三、踩到的坑 & 修掉的 bug
@@ -195,6 +197,7 @@ conv.messages.push({ role: 'tool_results', results, internal: true });
 
 7. **前端依赖加载顺序**
    拆成 5 个文件后，`core → chat → ui` 的顺序不能改。以后如果要加新层，记得它就是最后加载的。
+   （同日补丁改回单文件后，本限制已消失，保留供回顾）
 
 ---
 
@@ -222,6 +225,56 @@ cf1678d  feat(frontend): 新增 ui 层（设置面板 / 记忆 / 导出 / 事件
 3af180c  docs: 补充 README 使用说明与工作日志
 b8ad4a7  feat: 第一版实现（MCP server + start.bat）
 ed652f7  add SPEC.md   ← main 的起点
+```
+
+---
+
+## 八、同日补丁：从「能用」到「真能用」（2026-11-21 晚）
+
+> 第一版交付后，用户实际跑起来暴露了几个第一版「自认为没问题」的脆弱点。以下全部在本日晚修复。
+
+### 1. 前端拆 5 文件是个坑，已收回
+
+**现象**：用户拿到仓库后只有 `index.html`，没有 `js/` 文件夹 → 整页 JS 全部没加载 → 设置面板打不开、API Key 加不了。根因不是代码，是「拆分」本身给使用者埋了隐性前提：<b>必须整包解压，不能单独下载 index.html</b>。
+
+**修复**：
+- 改回**单文件自包含 index.html**（样式/脚本全内联），消除对 js/ 的依赖
+- 新增**页面顶部错误条**：`window.onerror` + `unhandledrejection` 捕获，错误直接显示在界面上，用户截图即得（不再需要开 F12）
+- 设置面板「机」页签：填 Key 时即时显示「已填写：sk-xxx…abcd」，保存后有长度回执（Key 存没存进去看得见）
+
+**教训**：宁可单文件大而稳，不要为了「职责清晰」让用户承担解压/路径正确性的风险。SPEC 允许的「少量文件」不等于拆分安全。
+
+### 2. MCP server 升级为 hub（v1.2.0）
+
+目标：第三方 MCP server 随时可加，避免每次新需求都要改代码。
+
+**支持三种接入**：
+
+| 类型 | 说明 | 配置 |
+|---|---|---|
+| 远程 HTTP | streamable HTTP / 普通 JSON / SSE 响应都认 | URL + 可选请求头 |
+| 老式 SSE | GET `/sse` 开流 → 收 `endpoint` 事件 → POST 消息端点 | URL + 可选请求头 |
+| 本地 stdio | 浏览器做不到 stdio，由 hub spawn 进程并桥接 | 命令 + 参数（npx 等） |
+
+**配套能力**：
+- 配置持久化到 `mcp_config.json`，前端设置 → MCP 页签可增删改/测试/启停
+- 每个 server 独立「调用前需确认」开关；工具名自动加 `<server>__` 前缀防冲突
+- 请求头支持（Authorization / X-Api-Key 等），解决带鉴权的远程 server
+- **协议版本协商**：按 `2025-06-18 → 2025-03-26 → 2024-11-05` 顺序尝试 —— GitHub MCP（`api.githubcopilot.com/mcp/`）等 2025+ server 不再握手失败
+- Windows 下 stdio 命令自动补 `.cmd` 后缀（`npx` → `npx.cmd`），避免 CreateProcess 找不到 `npx`
+- 前端 MCP 工具确认逻辑改为读 merge 后的 `tool.confirm` 字段，统一管理内置与第三方工具的弹窗策略
+
+### 3. 两个已知未解决（记入待办）
+
+- ❌ **老式 SSE 实测未通**：用户 git server `http://106.52.65.61:2584/sse`，hub 已实现完整流程但连接失败。疑点：①该端点可能不是标准 MCP（有自定义握手/鉴权）②endpoint 事件格式特殊 ③需要特定 query/header。
+  **下次排查方向**：抓 GET /sse 的原始响应字节，确认是否真的发 `endpoint` 事件；若为自定义协议，考虑对接适配层或换 WebSocket/轮询。
+- ⏸ **GitHub MCP 未实际配置**：端点（`https://api.githubcopilot.com/mcp/`，带斜杠）+ PAT 鉴权已查证，用户改用自建 git server，此项降级为「需要时即插即用」。
+
+### 4. 提交记录追加
+
+```
+bfe3419  feat: MCP hub 支持第三方 server（http/sse/stdio）+ 请求头 + 协议版本协商
+（前端单文件版待用户验证后单独推送）
 ```
 
 ---
