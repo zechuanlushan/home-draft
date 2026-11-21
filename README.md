@@ -43,8 +43,8 @@ python mcp_server/server.py
 
 | 类型 | Base URL 示例 | 说明 |
 |---|---|---|
-| Anthropic 原生 | `https://api.anthropic.com` | 自动补 `/v1/messages` |
-| OpenAI 兼容 | `https://api.openai.com` | 自动补 `/v1/chat/completions` |
+| Anthropic 原生 | `https://api.anthropic.com` | 自动拼 `/v1/messages` |
+| OpenAI 兼容 | `https://api.openai.com` | 自动拼 `/v1/chat/completions` |
 | 中转 / 第三方 | `https://xxx.com` | 同理，**不要带 `/v1`** |
 
 > **注意**：Base URL 只填到域名，程序自己接 `/v1/...`。
@@ -61,6 +61,8 @@ python mcp_server/server.py
 
 设置 → 记忆页签。记忆会在每次对话时注入 system prompt。
 可以指定归属：所有机共享，或只给某一台。
+
+> 目前是**手动添加**。SPEC 里「AI 可主动写记忆」还没接，原因见 WORKLOG 第五节。
 
 ### 文件工具（MCP）
 
@@ -84,29 +86,39 @@ COMMAND_WHITELIST = {...}                  # 命令白名单
 
 ---
 
-## 已知限制
-
-1. **CORS**：前端在浏览器里直连 provider API。Anthropic 和 OpenAI 官方接口都支持跨域（Anthropic 需要 `anthropic-dangerous-direct-browser-access` 头，代码里已带）。如果你用某个中转接口不放开 CORS，会报跨域错误——那就需要加个本地代理。
-2. **数据存 localStorage**：清理浏览器数据会丢。设置 → 通用 → 导出备份。
-3. **API Key 明文存在 localStorage**：本地个人使用可以接受，共用电脑请自己注意。
-4. **Markdown 渲染是内置的轻量实现**：支持标题、列表、代码块、表格、引用、链接、图片、粗斜体。不支持数学公式和 HTML 嵌入。
-
----
-
 ## 目录结构
 
 ```
 home-draft/
 ├── frontend/
-│   └── index.html          # 全部前端（单文件）
+│   ├── index.html          页面结构
+│   ├── style.css           全部样式
+│   └── js/
+│       ├── core.js         存储 / 工具函数 / Markdown / 渲染 / MCP 客户端
+│       ├── chat.js         输入 / 发送流程 / agent 循环 / provider 适配
+│       └── ui.js           设置面板 / 记忆 / 导出 / 事件绑定
 ├── mcp_server/
-│   ├── server.py           # MCP server，零第三方依赖
+│   ├── server.py           MCP server，零第三方依赖
 │   └── requirements.txt
-├── start.bat               # 一键启动
-├── SPEC.md                 # 原始需求
-├── WORKLOG.md              # 工作日志
+├── start.bat               一键启动
+├── SPEC.md                 原始需求
+├── WORKLOG.md              工作日志
 └── README.md
 ```
+
+前端脚本加载顺序固定为 `core → chat → ui`，后面的层依赖前面的层。
+
+---
+
+## 已知限制
+
+1. **CORS**：前端在浏览器里直连 provider API。Anthropic 和 OpenAI 官方接口都支持跨域（Anthropic 需要 `anthropic-dangerous-direct-browser-access` 头，代码里已带）。如果你用某个中转接口不放开 CORS，会报跨域错误——那就需要加个本地代理。
+2. **数据存 localStorage**：清理浏览器数据会丢。设置 → 通用 → 导出备份。
+3. **API Key 明文存在 localStorage**：本地个人使用可以接受，共用电脑请自己注意。导出备份时会剔除。
+4. **Markdown 渲染是自写轻量实现**：支持标题、列表、代码块、表格、引用、链接、图片、粗斜体、删除线。不支持数学公式和 HTML 嵌入。
+5. **MCP 协议是子集**：只实现了 tools，没有 resources / prompts / sampling。
+
+---
 
 ## 第一版没做的（按 SPEC 第九条）
 

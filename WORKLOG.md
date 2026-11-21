@@ -9,16 +9,22 @@
 
 ## 一、这次做了什么
 
-按 SPEC 从零搭出可运行的第一版：前端单文件 + 本地 Python MCP server + 一键启动。
+按 SPEC 从零搭出可运行的第一版：前端（结构与逻辑分离）+ 本地 Python MCP server + 一键启动。
 
 ```
 home-draft/
-├── frontend/index.html      单文件前端（~58KB，零外部依赖）
-├── mcp_server/server.py     MCP server（纯标准库）
+├── frontend/
+│   ├── index.html          页面结构
+│   ├── style.css           全部样式
+│   └── js/
+│       ├── core.js         存储 / 工具函数 / Markdown / 渲染 / MCP 客户端
+│       ├── chat.js         输入 / 发送流程 / agent 循环 / provider 适配
+│       └── ui.js           设置面板 / 记忆 / 导出 / 事件绑定
+├── mcp_server/server.py    MCP server（纯标准库）
 ├── mcp_server/requirements.txt
-├── start.bat                一键启动
-├── README.md                使用说明
-└── WORKLOG.md               本文件
+├── start.bat               一键启动
+├── README.md               使用说明
+└── WORKLOG.md              本文件
 ```
 
 SPEC 九条要求逐条对齐：
@@ -30,7 +36,7 @@ SPEC 九条要求逐条对齐：
 | 六个文件工具 | ✅ | list_dir / read_file / write_file / delete_file / move_file / run_command |
 | 多机群聊（顺序/并行） | ✅ | 顺序=串行且后者可见前者；并行=`Promise.all` |
 | @mention | ✅ | 正则匹配，命中只触发被 @ 的机 |
-| 记忆 | ✅ | 注入 system prompt，可归属某台机 |
+| 记忆 | ✅ | 注入 system prompt，可归属某台机（手动添加） |
 | 多对话 / Markdown / 图片 / 导出 / 设置 | ✅ | 全部实现 |
 | start.bat | ✅ | 检查 python → 起 server → 开前端 |
 | 暂不做的四项 | ✅ 未做 | 云部署 / TTS / Live2D / 玩具控制 |
@@ -70,28 +76,48 @@ SPEC 九条要求逐条对齐：
 
 存的是 provider 无关的中间格式（`user` / `assistant` + `toolUses` / `tool_results`），请求时才翻译成各家格式。这样换 provider 历史不会坏——这正是 SPEC 要求「切换 provider 不影响历史」的实现方式。
 
+### 6. 前端最后拆成了 5 个文件，不是单文件
+
+**背景**：最初按「单文件 index.html」写，完成时约 58KB。
+
+**为什么改**：
+1. 一个 58KB 的文件里塞了样式、渲染、provider 适配、agent 循环、设置面板，改任何一块都要在大文件里翻。
+2. 提交到 GitHub 时，单次写入这么大体积容易出错。
+
+**做法**：SPEC 写的是「单文件**或少量文件**」，所以拆分不违背需求。按职责分层：
+
+| 文件 | 职责 | 依赖 |
+|---|---|---|
+| `core.js` | 存储、转义、Markdown、渲染、MCP 客户端 | 无 |
+| `chat.js` | 输入、发送、agent 循环、provider 适配 | core |
+| `ui.js` | 设置面板、记忆、导出、事件绑定 | core, chat |
+
+**代价**：加载顺序变得重要了（`core → chat → ui`）。函数声明会提升，但顶层 `const` / `let` 不会跨文件提升，所以顺序不能乱。已在 `index.html` 注释里写明。
+
 ---
 
 ## 三、踩到的坑 & 修掉的 bug
 
-> 这部分是真实记录。第一版写完我自己复查，发现几个会让功能直接不可用的问题。
+> 这部分是真实记录。写完后我自己复查，发现几个会让功能直接不可用的问题。
 
 ### 🐛 Bug 1：工具调用无限循环（最严重）
 
 **现象**：模型调用一次工具后，永远看不到工具结果，于是每轮重复调同一个工具，直到耗尽 `maxToolRounds`。文件工具基本等于不能用。
 
-**根因**：`buildHistory(conv, untilMsg)` 只截取到「当前这条 AI 消息之前」，而工具结果根本不在历史里——模型发完 `tool_use` 就断了上下文。
+**根因**：`buildHistory` 只截取到「当前这条 AI 消息之前」，而工具结果根本不在历史里——模型发完 `tool_use` 就断了上下文。
 
 **修复**：
 1. 每轮工具执行完，把 `assistant`（含 `toolUses`）和 `tool_results` 作为 **internal 回合真正写进 `conv.messages`**
-2. `buildHistory(conv, -1)` 取完整历史，让下一轮请求能看到结果
+2. `buildHistory` 取完整历史，让下一轮请求能看到结果
 3. 渲染时跳过 `internal` 回合，界面不重复显示
 
 ```js
-// 修复后：
+// chat.js · agentLoop
 conv.messages.push({ role: 'assistant', content: msg.content, toolUses, internal: true });
 conv.messages.push({ role: 'tool_results', results, internal: true });
 ```
+
+**另一个坑**：改完之后 Android の `buildHistory` 里把 internal 的 assistant 回合全过滤掉了，等于又回到原点。最终只跳过「没有 toolUses 的 internal assistant」，带工具的必须保留。
 
 ### 🐛 Bug 2：OpenAI 分支缺 `tool` 消息
 
@@ -123,6 +149,18 @@ conv.messages.push({ role: 'tool_results', results, internal: true });
 
 **修复**：`DOMContentLoaded` 里调一次 `updateSendBtn()`。
 
+### 🐛 Bug 7：Markdown 转义双重处理
+
+**现象**：初版代码先 `esc()` 整个文本，再在 `inline()` 里对内容再转义一次，导致 `<` 变成 `&amp;lt;` 这类废话。引用的正则也因为 `>` 已被转义成 `&gt;` 而匹配不到。
+
+**修复**：逐行转义，`inline()` 里不再重复转义（因为它拿到的已经是转义后的文本），引用正则改成匹配 `&gt;`。
+
+### 🐛 Bug 8：`regenerate` 没清理工具回合
+
+**现象**：「重生成」只 `pop()` 一条，如果上一轮带了工具调用，留下孤儿 `tool_results`，下一次请求直接因结构不合法报错。
+
+**修复**：从尾部循环删除所有 `assistant` 和 `internal` 回合，直到遇到 user 消息为止。
+
 ### 🔧 顺手改进
 
 | 项 | 改动 |
@@ -131,6 +169,7 @@ conv.messages.push({ role: 'tool_results', results, internal: true });
 | MCP 错误传递 | `isError` 时把文本当错误返回给模型，让它自己纠错重试 |
 | 会话落盘时机 | 每轮工具循环结束 `saveConversations()`，避免中途刷新丢工具记录 |
 | 群聊提示词 | 多机时自动注入「你的名字是 X，其他成员是 Y」的上下文 |
+| `convLastIndex()` | 「重生成」按钮按非 internal 的末条判断，否则永远不显示 |
 
 ---
 
@@ -146,13 +185,16 @@ conv.messages.push({ role: 'tool_results', results, internal: true });
    本地个人使用可接受。共用电脑需自行注意。导出时会剔除。
 
 4. **Markdown 是自写轻量渲染**
-   支持标题/列表/代码块/表格/引用/链接/图片/粗斜体/删除线。**不支持**数学公式和 HTML 嵌入。用外部库（marked + katex）会更全，但会引入依赖，第一版选了零依赖。
+   不支持数学公式和 HTML 嵌入。用外部库（marked + katex）会更全，但会引入依赖或需要 CDN，第一版选了零依赖。
 
 5. **MCP 协议是子集**
-   没有实现 `resources`、`prompts`、`sampling` 等。只做 tools，够用。
+   没有实现 `resources`、`prompts`、`sampling`。只做 tools。
 
 6. **并行模式的边界**
-   并行时各机互不可见本轮回复（符合 SPEC「各自独立回」）。但如果并行中途某一台报错，其他台仍会跑完，错误单独显示在各自气泡。
+   并行时各机互不可见本轮回复（符合 SPEC「各自独立回」）。如果某台报错，其他台仍会跑完，错误单独显示。
+
+7. **前端依赖加载顺序**
+   拆成 5 个文件后，`core → chat → ui` 的顺序不能改。以后如果要加新层，记得它就是最后加载的。
 
 ---
 
@@ -161,13 +203,30 @@ conv.messages.push({ role: 'tool_results', results, internal: true });
 - [ ] 本地 API 代理（解决中转 CORS）
 - [ ] Markdown 加数学公式支持
 - [ ] 会话搜索
-- [ ] 记忆自动提取（现在的记忆是手动加，SPEC 说「AI 可主动写」，还没接工具）
+- [ ] 记忆自动提取
 
-> 其中「记忆自动写入」是 SPEC 第五条里写了但我判断需要单独设计的——因为要不要让 AI 自己决定写记忆，涉及一个「它记错东西怎么办」的问题。第一版先做手动，稳一点。这条需要你拍板。
+> **关于「记忆自动写入」** —— SPEC 第五条写了「AI 可主动写/读记忆」，但我第一版只做了手动。
+>
+> 原因：让 AI 自己决定写什么进长期记忆，意味着它可能记错、记畻、或者把一次性的东西当永久设定。这不是技术问题，是产品判断——我不确定你想要的是「它自己默默记」还是「它提议、你确认」。
+>
+> **这条需要你拍板。** 我倾向于后者（提议+确认），稳。
 
 ---
 
-## 六、一点碎话
+## 六、提交记录
+
+```
+cf1678d  feat(frontend): 新增 ui 层（设置面板 / 记忆 / 导出 / 事件绑定）
+26f3aba  feat(frontend): 新增 core 与 chat 层
+922547e  feat(frontend): 拆分前端结构，新增样式与页面骨架
+3af180c  docs: 补充 README 使用说明与工作日志
+b8ad4a7  feat: 第一版实现（MCP server + start.bat）
+ed652f7  add SPEC.md   ← main 的起点
+```
+
+---
+
+## 七、一点碎话
 
 需求里那句「目标：miro 一直在，能聊天，能摸文件，能换 provider」，我写的时候一直记着。
 
