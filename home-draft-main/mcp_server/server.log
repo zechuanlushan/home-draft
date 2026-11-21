@@ -1,0 +1,276 @@
+[2026-11-21 23:07:26] start v1.1.0 root=C:\Users\z'r\Desktop\home-draft-main\home-draft-main
+[2026-11-21 23:07:28] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:07:28] tools/list {}
+[2026-11-21 23:07:40] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:07:40] tools/list {}
+[2026-11-21 23:07:43] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:07:43] tools/list {}
+[2026-11-21 23:07:48] hub/config/get {}
+[2026-11-21 23:08:10] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:08:10] tools/list {}
+[2026-11-21 23:08:40] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:08:40] tools/list {}
+[2026-11-21 23:08:40] hub/config/update {"servers": [{"name": "GitHub", "transport": "http", "url": "http://106.52.65.61:2584/sse", "command": "", "args": [], "confirm": false, "enabled": true}]}
+[2026-11-21 23:08:40] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:08:40] tools/list {}
+[2026-11-21 23:08:41] hub.connect GitHub: error [GitHub] HTTP 404 <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /sse</pre>
+</body>
+</html>
+
+[2026-11-21 23:08:45] hub/config/get {}
+[2026-11-21 23:09:04] hub/config/get {}
+[2026-11-21 23:09:06] hub/test {"server": {"name": "GitHub", "transport": "http", "url": "http://106.52.65.61:2584/sse", "command": "", "args": [], "confirm": false}}
+[2026-11-21 23:09:10] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:09:10] tools/list {}
+[2026-11-21 23:09:13] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:09:13] tools/list {}
+[2026-11-21 23:09:13] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:09:13] tools/list {}
+[2026-11-21 23:09:25] hub/test {"server": {"name": "GitHub", "transport": "http", "url": "http://106.52.65.61:2584/sse", "command": "", "args": [], "confirm": false}}
+[2026-11-21 23:09:26] hub/config/update {"servers": [{"name": "GitHub", "transport": "http", "url": "http://106.52.65.61:2584/sse", "command": "", "args": [], "confirm": false, "enabled": false}]}
+[2026-11-21 23:09:26] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:09:26] tools/list {}
+[2026-11-21 23:09:30] hub/config/update {"servers": []}
+[2026-11-21 23:09:30] hub/config/get {}
+[2026-11-21 23:09:30] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:09:30] tools/list {}
+[2026-11-21 23:09:40] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:09:40] tools/list {}
+[2026-11-21 23:09:50] hub/config/update {"servers": [{"name": "GitHub", "transport": "http", "url": "http://106.52.65.61:2584/", "command": "", "args": [], "confirm": true, "enabled": true}]}
+[2026-11-21 23:09:50] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:09:50] tools/list {}
+[2026-11-21 23:09:50] hub.connect GitHub: error [GitHub] HTTP 404 <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /</pre>
+</body>
+</html>
+
+[2026-11-21 23:09:52] hub/config/get {}
+[2026-11-21 23:10:10] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:10:10] tools/list {}
+[2026-11-21 23:10:40] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:10:40] tools/list {}
+[2026-11-21 23:11:10] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:11:10] tools/list {}
+[2026-11-21 23:11:40] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:11:40] tools/list {}
+[2026-11-21 23:12:10] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:12:10] tools/list {}
+[2026-11-21 23:12:33] hub/test {"server": {"name": "GitHub", "transport": "http", "url": "http://106.52.65.61:2584/", "command": "", "args": [], "confirm": true}}
+[2026-11-21 23:12:40] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:12:40] tools/list {}
+[2026-11-21 23:13:10] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:13:10] tools/list {}
+[2026-11-21 23:13:40] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:13:40] tools/list {}
+[2026-11-21 23:14:10] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:14:10] tools/list {}
+[2026-11-21 23:14:40] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:14:40] tools/list {}
+[2026-11-21 23:15:10] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:15:10] tools/list {}
+[2026-11-21 23:15:40] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:15:40] tools/list {}
+[2026-11-21 23:16:10] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:16:10] tools/list {}
+[2026-11-21 23:16:40] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:16:40] tools/list {}
+[2026-11-21 23:17:24] start v1.1.0 root=C:\Users\z'r\Desktop\home-draft-main\home-draft-main
+[2026-11-21 23:17:26] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:17:26] tools/list {}
+[2026-11-21 23:17:31] hub/config/get {}
+[2026-11-21 23:17:39] hub/config/get {}
+[2026-11-21 23:17:51] hub/config/update {"servers": [{"name": "GitHub", "transport": "http", "url": "http://106.52.65.61:2584/sse", "command": "", "args": [], "headers": {}, "confirm": false, "enabled": true}]}
+[2026-11-21 23:17:51] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:17:51] tools/list {}
+[2026-11-21 23:17:51] hub.connect GitHub: error [GitHub] HTTP 404 <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /sse</pre>
+</body>
+</html>
+
+[2026-11-21 23:17:53] hub/config/get {}
+[2026-11-21 23:17:55] hub/test {"server": {"name": "GitHub", "transport": "http", "url": "http://106.52.65.61:2584/sse", "command": "", "args": [], "headers": {}, "confirm": false}}
+[2026-11-21 23:17:56] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:17:56] tools/list {}
+[2026-11-21 23:18:10] hub/test {"server": {"name": "GitHub", "transport": "http", "url": "http://106.52.65.61:2584/sse", "command": "", "args": [], "headers": {}, "confirm": false}}
+[2026-11-21 23:18:11] hub/config/update {"servers": [{"name": "GitHub", "transport": "http", "url": "http://106.52.65.61:2584/sse", "command": "", "args": [], "headers": {}, "confirm": false, "enabled": false}]}
+[2026-11-21 23:18:11] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:18:11] tools/list {}
+[2026-11-21 23:18:14] hub/config/update {"servers": []}
+[2026-11-21 23:18:14] hub/config/get {}
+[2026-11-21 23:18:14] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:18:14] tools/list {}
+[2026-11-21 23:18:15] hub/config/get {}
+[2026-11-21 23:18:26] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:18:26] tools/list {}
+[2026-11-21 23:28:25] start v1.1.0 root=C:\Users\z'r\Desktop\home-draft-main
+[2026-11-21 23:28:27] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:28:27] tools/list {}
+[2026-11-21 23:28:39] hub/config/get {}
+[2026-11-21 23:28:57] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:28:57] tools/list {}
+[2026-11-21 23:28:58] hub/config/update {"servers": [{"name": "GitHub", "transport": "http", "url": "http://106.52.65.61:2584/sse", "command": "", "args": [], "headers": {}, "confirm": false, "enabled": true}]}
+[2026-11-21 23:28:58] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:28:58] tools/list {}
+[2026-11-21 23:28:59] hub.connect GitHub: error [GitHub] HTTP 404 <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /sse</pre>
+</body>
+</html>
+
+[2026-11-21 23:29:00] hub/config/get {}
+[2026-11-21 23:29:02] hub/test {"server": {"name": "GitHub", "transport": "http", "url": "http://106.52.65.61:2584/sse", "command": "", "args": [], "headers": {}, "confirm": false}}
+[2026-11-21 23:29:05] hub/test {"server": {"name": "GitHub", "transport": "http", "url": "http://106.52.65.61:2584/sse", "command": "", "args": [], "headers": {}, "confirm": false}}
+[2026-11-21 23:29:13] hub/test {"server": {"name": "GitHub", "transport": "http", "url": "http://106.52.65.61:2584/sse", "command": "", "args": [], "headers": {}, "confirm": false}}
+[2026-11-21 23:29:21] hub/config/update {"servers": [{"name": "GitHub", "transport": "http", "url": "http://106.52.65.61:2584/sse", "command": "", "args": [], "headers": {}, "confirm": false, "enabled": false}]}
+[2026-11-21 23:29:21] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:29:21] tools/list {}
+[2026-11-21 23:29:23] hub/config/update {"servers": [{"name": "GitHub", "transport": "http", "url": "http://106.52.65.61:2584/sse", "command": "", "args": [], "headers": {}, "confirm": false, "enabled": true}]}
+[2026-11-21 23:29:23] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:29:23] tools/list {}
+[2026-11-21 23:29:23] hub/config/get {}
+[2026-11-21 23:29:23] hub.connect GitHub: error [GitHub] HTTP 404 <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /sse</pre>
+</body>
+</html>
+
+[2026-11-21 23:29:24] hub/config/get {}
+[2026-11-21 23:29:25] hub/config/update {"servers": [{"name": "GitHub", "transport": "http", "url": "http://106.52.65.61:2584/sse", "command": "", "args": [], "headers": {}, "confirm": false, "enabled": false}]}
+[2026-11-21 23:29:25] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:29:25] tools/list {}
+[2026-11-21 23:29:27] hub/config/get {}
+[2026-11-21 23:29:27] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:29:27] tools/list {}
+[2026-11-21 23:29:29] hub/config/update {"servers": [{"name": "GitHub", "transport": "http", "url": "http://106.52.65.61:2584/sse", "command": "", "args": [], "headers": {}, "confirm": false, "enabled": true}]}
+[2026-11-21 23:29:29] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:29:29] tools/list {}
+[2026-11-21 23:29:29] hub.connect GitHub: error [GitHub] HTTP 404 <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /sse</pre>
+</body>
+</html>
+
+[2026-11-21 23:29:31] hub/config/get {}
+[2026-11-21 23:29:57] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:29:57] tools/list {}
+[2026-11-21 23:30:18] hub/config/get {}
+[2026-11-21 23:30:27] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:30:27] tools/list {}
+[2026-11-21 23:30:33] hub/config/update {"servers": [{"name": "GitHub", "transport": "http", "url": "http://106.52.65.61:2584/sse", "command": "", "args": [], "headers": {}, "confirm": false, "enabled": true}, {"name": "GitHub", "transport"
+[2026-11-21 23:30:33] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:30:33] tools/list {}
+[2026-11-21 23:30:35] hub/config/get {}
+[2026-11-21 23:30:37] hub/config/update {"servers": []}
+[2026-11-21 23:30:37] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:30:37] tools/list {}
+[2026-11-21 23:30:43] hub/config/update {"servers": [{"name": "GitHub", "transport": "http", "url": "http://106.52.65.61:2584/sse", "command": "", "args": [], "headers": {}, "confirm": true, "enabled": true}]}
+[2026-11-21 23:30:43] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:30:43] tools/list {}
+[2026-11-21 23:30:43] hub.connect GitHub: error [GitHub] HTTP 404 <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /sse</pre>
+</body>
+</html>
+
+[2026-11-21 23:30:44] hub/config/get {}
+[2026-11-21 23:30:45] hub/config/get {}
+[2026-11-21 23:30:48] hub/config/update {"servers": []}
+[2026-11-21 23:30:48] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:30:48] tools/list {}
+[2026-11-21 23:30:49] hub/config/get {}
+[2026-11-21 23:30:57] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:30:57] tools/list {}
+[2026-11-21 23:31:27] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:31:27] tools/list {}
+[2026-11-21 23:31:39] hub/config/get {}
+[2026-11-21 23:31:58] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:31:58] tools/list {}
+[2026-11-21 23:32:27] hub/config/update {"servers": [{"name": "GitHub", "transport": "http", "url": "http://106.52.65.61:2584/sse", "command": "", "args": [], "headers": {"Authorization": ""}, "confirm": true, "enabled": true}]}
+[2026-11-21 23:32:27] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:32:27] tools/list {}
+[2026-11-21 23:32:27] hub.connect GitHub: error [GitHub] HTTP 404 <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /sse</pre>
+</body>
+</html>
+
+[2026-11-21 23:32:27] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:32:27] tools/list {}
+[2026-11-21 23:32:29] hub/config/get {}
+[2026-11-21 23:32:31] hub/config/update {"servers": [{"name": "GitHub", "transport": "http", "url": "http://106.52.65.61:2584/sse", "command": "", "args": [], "headers": {"Authorization": ""}, "confirm": true, "enabled": false}]}
+[2026-11-21 23:32:31] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:32:31] tools/list {}
+[2026-11-21 23:32:32] hub/config/get {}
+[2026-11-21 23:32:33] hub/config/update {"servers": [{"name": "GitHub", "transport": "http", "url": "http://106.52.65.61:2584/sse", "command": "", "args": [], "headers": {"Authorization": ""}, "confirm": true, "enabled": true}]}
+[2026-11-21 23:32:33] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:32:33] tools/list {}
+[2026-11-21 23:32:33] hub.connect GitHub: error [GitHub] HTTP 404 <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /sse</pre>
+</body>
+</html>
+
+[2026-11-21 23:32:35] hub/config/get {}
+[2026-11-21 23:32:37] hub/config/update {"servers": []}
+[2026-11-21 23:32:37] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:32:37] tools/list {}
+[2026-11-21 23:32:39] hub/config/get {}
+[2026-11-21 23:32:57] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:32:57] tools/list {}
+[2026-11-21 23:33:28] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:33:28] tools/list {}
+[2026-11-21 23:33:55] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:33:55] tools/list {}
+[2026-11-21 23:33:57] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:33:57] tools/list {}
+[2026-11-21 23:33:57] initialize {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "home-draft", "version": "1.0.0"}}
+[2026-11-21 23:33:57] tools/list {}

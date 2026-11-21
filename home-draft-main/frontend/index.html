@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>home-draft</title>
+<style>
+:root{--bg:#0f1115;--bg2:#161a21;--bg3:#1d222b;--line:#2a3140;--fg:#e6e9ef;--fg2:#9aa4b5;
+--fg3:#66707f;--accent:#7aa2f7;--ok:#9ece6a;--err:#f7768e}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,"Segoe UI","Microsoft YaHei",system-ui,sans-serif;background:var(--bg);
+color:var(--fg);font-size:14px;line-height:1.65;display:flex;overflow:hidden}
+button,input,textarea,select{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#333c4d;border-radius:4px}
+#errbar{position:fixed;top:0;left:0;right:0;z-index:999;background:#3a1420;border-bottom:2px solid #f7768e;
+color:#ffc9d4;padding:10px 40px 10px 14px;font-size:12.5px;font-family:Consolas,monospace;
+white-space:pre-wrap;max-height:40vh;overflow:auto;display:none}
+#errbar .x{position:absolute;top:6px;right:10px;color:#ffc9d4;font-size:18px}
+#sidebar{width:250px;flex:0 0 250px;background:var(--bg2);border-right:1px solid var(--line);
+display:flex;flex-direction:column;transition:margin-left .2s}
+#sidebar.hide{margin-left:-250px}
+.sb-head{padding:14px 14px 10px;border-bottom:1px solid var(--line);font-size:15px;font-weight:600;
+display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok)}
+.sb-list{flex:1;overflow-y:auto;padding:8px}
+.conv{padding:9px 10px;border-radius:8px;margin-bottom:3px;display:flex;align-items:center;gap:8px;
+cursor:pointer;color:var(--fg2);font-size:13px}
+.conv:hover,.conv.active{background:var(--bg3)}
+.conv.active{color:var(--fg)}
+.conv .name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.conv .del{opacity:0;color:var(--fg3);font-size:16px;padding:0 3px}
+.conv:hover .del{opacity:1}
+.sb-foot{padding:10px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.btn{padding:9px 12px;border-radius:8px;background:var(--bg3);color:var(--fg);text-align:center;
+font-size:13px;border:1px solid transparent;transition:.15s}
+.btn:hover{background:#252c38;border-color:var(--line)}
+.btn.primary{background:linear-gradient(135deg,#3d5a9e,#5b3d9e);border-color:#4a5a9e}
+.btn.sm{padding:6px 10px;font-size:12px}
+.btn.ghost{background:transparent;border:1px solid var(--line)}
+.btn.danger{color:var(--err);border:1px solid #4a2c35}
+#main{flex:1;display:flex;flex-direction:column;min-width:0}
+#topbar{height:48px;flex:0 0 48px;border-bottom:1px solid var(--line);display:flex;align-items:center;
+padding:0 12px;gap:10px;background:var(--bg2)}
+#conv-title{flex:1;font-size:13px;color:var(--fg2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.icon-btn{width:32px;height:32px;border-radius:7px;display:grid;place-items:center;color:var(--fg2)}
+.icon-btn:hover{background:var(--bg3);color:var(--fg)}
+.badge{font-size:11px;padding:3px 8px;border-radius:20px;border:1px solid var(--line);color:var(--fg3)}
+.badge.on{color:var(--ok);border-color:#2f4a2f}
+.badge.off{color:var(--err);border-color:#4a2c35}
+#messages{flex:1;overflow-y:auto;padding:20px 0 8px}
+.msg{max-width:860px;margin:0 auto 20px;padding:0 20px;display:flex;gap:11px}
+.msg.user{flex-direction:row-reverse}
+.avatar{width:32px;height:32px;flex:0 0 32px;border-radius:9px;display:grid;place-items:center;
+font-size:13px;font-weight:600;color:#fff}
+.col{min-width:0;max-width:calc(100% - 90px);display:flex;flex-direction:column}
+.msg.user .col{align-items:flex-end}
+.sender{font-size:11px;color:var(--fg3);margin-bottom:4px;padding:0 3px}
+.bubble{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;
+word-wrap:break-word;overflow-wrap:anywhere}
+.msg.user .bubble{background:#243147;border-color:#2f4059}
+.bubble img{max-width:100%;border-radius:6px;margin:5px 0;display:block}
+.tools{display:flex;gap:8px;margin-top:6px;opacity:0;transition:.15s}
+.msg:hover .tools{opacity:1}
+.tools button{font-size:11px;color:var(--fg3)}
+.tools button:hover{color:var(--accent)}
+.bubble p{margin:0 0 8px}.bubble p:last-child{margin-bottom:0}
+.bubble h1,.bubble h2,.bubble h3{margin:12px 0 7px;line-height:1.3}
+.bubble ul,.bubble ol{margin:6px 0 8px;padding-left:22px}
+.bubble code{background:#0c0e12;padding:1.5px 5px;border-radius:4px;font-size:12.5px;
+font-family:Consolas,monospace;color:#e6b673}
+.bubble pre{background:#0b0d11;border:1px solid var(--line);border-radius:8px;padding:11px 13px;
+overflow-x:auto;margin:8px 0}
+.bubble pre code{background:none;padding:0;color:#c3ccdb}
+.bubble blockquote{border-left:3px solid var(--accent);padding-left:11px;color:var(--fg2);margin:8px 0}
+.bubble table{border-collapse:collapse;margin:8px 0;font-size:13px}
+.bubble th,.bubble td{border:1px solid var(--line);padding:5px 10px}
+.bubble a{color:var(--accent)}
+.bubble hr{border:none;border-top:1px solid var(--line);margin:12px 0}
+.toolcard{border:1px solid #3a4a6a;background:#12171f;border-radius:8px;margin:8px 0;font-size:12px;overflow:hidden}
+.toolcard .th{padding:7px 11px;background:#182030;color:var(--accent)}
+.toolcard .tb{padding:8px 11px;color:var(--fg2);font-family:Consolas,monospace;font-size:11.5px;
+white-space:pre-wrap;max-height:200px;overflow:auto}
+.typing span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--fg3);margin-right:4px;
+animation:bl 1.2s infinite}
+.typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+@keyframes bl{0%,60%,100%{opacity:.3}30%{opacity:1}}
+@keyframes sp{to{transform:rotate(360deg)}}.spin{animation:sp 1s linear infinite;display:inline-block}
+#composer{padding:10px 20px 16px;max-width:900px;margin:0 auto;width:100%}
+#inputbox{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+#inputbox:focus-within{border-color:#3f5a8a}
+#atts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:7px}
+#atts:empty{display:none}
+.att{position:relative;width:52px;height:52px;border-radius:7px;overflow:hidden;border:1px solid var(--line)}
+.att img{width:100%;height:100%;object-fit:cover}
+.att .x{position:absolute;top:1px;right:1px;width:16px;height:16px;border-radius:50%;background:#000a;
+color:#fff;font-size:11px;display:grid;place-items:center}
+#inputrow{display:flex;align-items:flex-end;gap:8px}
+#input{flex:1;background:none;border:none;outline:none;resize:none;max-height:180px;min-height:24px;
+line-height:1.55;padding:3px 0}
+#send{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#4a72c4,#6d4ac4);
+display:grid;place-items:center;color:#fff;flex:0 0 34px}
+#send.stop{background:#8a3a4a}
+#hint{display:flex;justify-content:space-between;font-size:11px;color:var(--fg3);margin-top:6px;padding:0 3px}
+#welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+color:var(--fg2);text-align:center;padding:20px}
+#welcome h1{font-size:26px;font-weight:600;background:linear-gradient(135deg,#7aa2f7,#bb9af7);
+-webkit-background-clip:text;background-clip:text;color:transparent}
+#welcome p{font-size:13px;max-width:420px;line-height:1.8}
+.mask{position:fixed;inset:0;background:#000a;z-index:100;display:flex;align-items:center;
+justify-content:center;padding:20px}
+.modal{background:var(--bg2);border:1px solid var(--line);border-radius:14px;width:100%;max-width:640px;
+max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 60px #0009}
+.mhead{display:flex;align-items:center;padding:15px 18px;border-bottom:1px solid var(--line)}
+.mhead h2{font-size:15px;flex:1}
+.mbody{padding:16px 18px;overflow-y:auto;flex:1}
+.mfoot{padding:13px 18px;border-top:1px solid var(--line);display:flex;gap:9px;justify-content:flex-end}
+.tabs{display:flex;gap:4px;padding:0 18px;border-bottom:1px solid var(--line)}
+.tab{padding:10px 13px;font-size:13px;color:var(--fg3);border-bottom:2px solid transparent;
+margin-bottom:-1px;cursor:pointer}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;color:var(--fg2);margin-bottom:5px}
+.desc{font-size:11px;color:var(--fg3);margin-top:4px;line-height:1.6}
+.field input,.field select,.field textarea{width:100%;background:var(--bg);border:1px solid var(--line);
+border-radius:7px;padding:8px 10px;outline:none}
+.field input:focus{border-color:#3f5a8a}
+.field textarea{resize:vertical;min-height:70px;font-family:Consolas,monospace;font-size:12.5px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.sw{display:flex;align-items:center;justify-content:space-between;padding:9px 0;
+border-bottom:1px solid #2228;gap:12px}
+.sw:last-child{border:none}
+.sw .l{font-size:13px}
+.sw .d{font-size:11px;color:var(--fg3);margin-top:2px}
+.tg{width:40px;height:22px;border-radius:11px;background:#333c4d;position:relative;flex:0 0 40px;
+transition:.2s;cursor:pointer}
+.tg::after{content:"";position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;
+top:3px;left:3px;transition:.2s}
+.tg.on{background:var(--accent)}.tg.on::after{left:21px}
+.machine{border:1px solid var(--line);border-radius:9px;padding:12px;margin-bottom:11px;background:var(--bg3)}
+.machine .mh{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.machine .c{width:10px;height:10px;border-radius:50%}
+.machine .n{flex:1;font-size:13px;font-weight:600}
+.machine .a{display:flex;gap:6px}
+.mem{border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:8px;background:var(--bg3);
+font-size:12.5px}
+.mem .mt{display:flex;justify-content:space-between;margin-bottom:5px;color:var(--fg3);font-size:11px}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#2a3240;
+border:1px solid var(--line);padding:10px 18px;border-radius:9px;font-size:13px;z-index:300;opacity:0;
+transition:.25s;box-shadow:0 8px 24px #0008}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.err{border-color:#5a2c38;color:#ffb0bd}
+#toast.ok{border-color:#2f4a2f;color:#b6e08f}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div id="errbar"><button class="x" onclick="document.getElementById('errbar').style.display='none'">×</button><div id="errtxt"></div></div>
+
+<aside id="sidebar">
+  <div class="sb-head"><span class="dot"></span>home-draft</div>
+  <div class="sb-list" id="convlist"></div>
+  <div class="sb-foot">
+    <button class="btn primary" onclick="newConv()">+ 新对话</button>
+    <button class="btn ghost" onclick="openSettings()">设置</button>
+  </div>
+</aside>
+
+<main id="main">
+  <div id="topbar">
+    <button class="icon-btn" onclick="document.getElementById('sidebar').classList.toggle('hide')">☰</button>
+    <div id="conv-title">新对话</div>
+    <span class="badge" id="mcpbadge">MCP 未连接</span>
+    <button class="icon-btn" onclick="openExport()" title="导出">⤓</button>
+  </div>
+
+  <div id="welcome">
+    <h1>home-draft</h1>
+    <p>一个跑在本地的家。<br>先去设置里填 provider。</p>
+    <button class="btn" onclick="openSettings()">开始配置</button>
+  </div>
+
+  <div id="messages" class="hidden"></div>
+
+  <div id="composer" class="hidden">
+    <div id="inputbox">
+      <div id="atts"></div>
+      <div id="inputrow">
+        <textarea id="input" rows="1" placeholder="说点什么…（Ctrl+V 贴图，@机名 定向呼叫）"></textarea>
+        <button id="send" onclick="onSendClick()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
+      </div>
+    </div>
+    <div id="hint"><span>Enter 发送 · Shift+Enter 换行</span><span id="modehint"></span></div>
+  </div>
+</main>
+
+<div id="modal"></div>
+<div id="toast"></div>
+
+<script>
+/* ==================================================================
+   0. 错误看得见
+   ================================================================== */
+function showErr(msg) {
+  const bar = document.getElementById('errbar');
+  const txt = document.getElementById('errtxt');
+  if (!bar || !txt) return;
+  txt.textContent += (txt.textContent ? '\n' : '') + msg;
+  bar.style.display = 'block';
+}
+window.addEventListener('error', e => {
+  showErr('[错误] ' + (e.message || '?') + '\n  位置: ' + (e.filename || '?') + ':' + (e.lineno || '?'));
+});
+window.addEventListener('unhandledrejection', e => {
+  showErr('[未处理的 Promise 错误] ' + (e.reason && e.reason.message ? e.reason.message : e.reason));
+});
+
+/* ==================================================================
+   1. 存储
+   ================================================================== */
+const K = { CONV: 'hd.conv', SET: 'hd.set', MEM: 'hd.mem', CUR: 'hd.cur' };
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { toast('存储失败: ' + e.message, 'err'); return false; } },
+};
+
+const DEF = {
+  mcpUrl: 'http://127.0.0.1:8766',
+  mcpEnabled: false,
+  confirmTools: true,
+  mode: 'sequential',
+  maxToolRounds: 6,
+  machines: [{
+    id: 'miro', name: 'miro', color: '#7aa2f7', enabled: true,
+    provider: 'anthropic', baseUrl: 'https://api.anthropic.com', apiKey: '',
+    model: 'claude-sonnet-4-20250514',
+    systemPrompt: '你是 miro，住在这个家里。说话自然、有温度。',
+    maxTokens: 4096, temperature: 0.7,
+  }],
+};
+
+let settings = Object.assign({}, DEF, store.get(K.SET, {}));
+if (!Array.isArray(settings.machines) || !settings.machines.length) {
+  settings.machines = JSON.parse(JSON.stringify(DEF.machines));
+}
+let conversations = store.get(K.CONV, []);
+let memories = store.get(K.MEM, []);
+let curId = store.get(K.CUR, null);
+let pending = [];
+let abortCtl = null;
+let busy = false;
+let mcpCache = null;
+let tab = 'provider';
+let extServers = [];
+
+const saveSet = () => store.set(K.SET, settings);
+const saveConv = () => store.set(K.CONV, conversations);
+const saveMem = () => store.set(K.MEM, memories);
+
+/* ==================================================================
+   2. 小工具
+   ================================================================== */
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
+  c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const $ = id => document.getElementById(id);
+
+function toast(msg, type) {
+  const el = $('toast'); if (!el) return;
+  el.textContent = msg;
+  el.className = 'show ' + (type || '');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = ''; }, 2400);
+}
+
+const getName = id => settings.machines.find(m => m.id === id || m.name === id);
+function hhmm(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+
+/* ==================================================================
+   3. Markdown（轻量自实现）
+   ================================================================== */
+function md(src) {
+  if (!src) return '';
+  let s = String(src).replace(/\r\n/g, '\n');
+  const blocks = [];
+  s = s.replace(/```([\w+-]*)\n?([\s\S]*?)```/g, (_, lang, code) => {
+    const i = blocks.length;
+    blocks.push('<pre><code>' + esc(code.replace(/\n$/, '')) + '</code></pre>');
+    return '\u0000B' + i + '\u0000';
+  });
+
+  const inline = t => t
+    .replace(/`([^`\n]+)`/g, (_, c) => '<code>' + esc(c) + '</code>')
+    .replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, (_, a, u) => '<img src="' + esc(u) + '" alt="' + esc(a) + '">')
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, t2, u) => '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(t2) + '</a>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>')
+    .replace(/~~([^~]+)~~/g, '<del>$1</del>');
+
+  const out = [];
+  let list = null, quote = false, tbl = [];
+  const fList = () => { if (list) { out.push('</' + list + '>'); list = null; } };
+  const fQuote = () => { if (quote) { out.push('</blockquote>'); quote = false; } };
+  const fTbl = () => {
+    if (!tbl.length) return;
+    const rows = tbl.filter(r => !/^\s*\|?[\s:-]+\|/.test(r));
+    const cells = r => r.replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+    if (rows.length) {
+      out.push('<table><thead><tr>' + cells(rows[0]).map(c => '<th>' + inline(c) + '</th>').join('') +
+        '</tr></thead><tbody>' + rows.slice(1).map(r => '<tr>' + cells(r).map(c => '<td>' + inline(c) + '</td>').join('') + '</tr>').join('') +
+        '</tbody></table>');
+    }
+    tbl = [];
+  };
+
+  for (const raw of s.split('\n')) {
+    const line = esc(raw);
+    const bm = line.match(/^\u0000B(\d+)\u0000$/);
+    if (bm) { fList(); fQuote(); fTbl(); out.push(blocks[+bm[1]]); continue; }
+    if (/^\s*\|.*\|\s*$/.test(line)) { fList(); fQuote(); tbl.push(line); continue; }
+    fTbl();
+    if (!line.trim()) { fList(); fQuote(); continue; }
+    const h = line.match(/^(#{1,6})\s+(.*)$/);
+    if (h) { fList(); fQuote(); out.push('<h' + h[1].length + '>' + inline(h[2]) + '</h' + h[1].length + '>'); continue; }
+    if (/^\s*([-*_])\1{2,}\s*$/.test(line)) { fList(); fQuote(); out.push('<hr>'); continue; }
+    const q = line.match(/^\s*&gt;\s?(.*)$/);
+    if (q) { fList(); if (!quote) { out.push('<blockquote>'); quote = true; } out.push('<p>' + inline(q[1]) + '</p>'); continue; }
+    fQuote();
+    const ol = line.match(/^\s*\d+\.\s+(.*)$/);
+    if (ol) { if (list !== 'ol') { fList(); out.push('<ol>'); list = 'ol'; } out.push('<li>' + inline(ol[1]) + '</li>'); continue; }
+    const ul = line.match(/^\s*[-*+]\s+(.*)$/);
+    if (ul) { if (list !== 'ul') { fList(); out.push('<ul>'); list = 'ul'; } out.push('<li>' + inline(ul[1]) + '</li>'); continue; }
+    fList();
+    out.push('<p>' + inline(line) + '</p>');
+  }
+  fList(); fQuote(); fTbl();
+  return out.join('');
+}
+
+/* ==================================================================
+   4. 对话 & 渲染
+   ================================================================== */
+const curConv = () => conversations.find(c => c.id === curId);
+
+function newConv(silent) {
+  const c = { id: uid(), title: '新对话', messages: [], ts: Date.now() };
+  conversations.unshift(c);
+  curId = c.id;
+  saveConv(); store.set(K.CUR, curId);
+  renderList(); renderChat();
+  if (!silent) { const i = $('input'); if (i) i.focus(); }
+}
+
+function delConv(id, ev) {
+  if (ev) ev.stopPropagation();
+  if (!confirm('删除这个对话？')) return;
+  conversations = conversations.filter(c => c.id !== id);
+  if (curId === id) curId = conversations[0] ? conversations[0].id : null;
+  saveConv(); store.set(K.CUR, curId);
+  renderList(); renderChat();
+}
+
+function renderList() {
+  const el = $('convlist'); if (!el) return;
+  if (!conversations.length) {
+    el.innerHTML = '<div style="padding:14px;font-size:12px;color:#66707f;text-align:center">还没有对话</div>';
+    return;
+  }
+  el.innerHTML = conversations.map(c =>
+    '<div class="conv' + (c.id === curId ? ' active' : '') + '" onclick="switchConv(\'' + c.id + '\')">' +
+    '<span class="name">' + esc(c.title) + '</span>' +
+    '<span class="del" onclick="delConv(\'' + c.id + '\',event)">×</span></div>').join('');
+}
+
+function switchConv(id) {
+  curId = id; store.set(K.CUR, curId);
+  renderList(); renderChat();
+}
+
+function lastVisibleIndex() {
+  const list = curConv() ? curConv().messages : [];
+  for (let i = list.length - 1; i >= 0; i--) if (!list[i].internal) return i;
+  return -1;
+}
+
+function renderChat() {
+  const conv = curConv();
+  const w = $('welcome'), m = $('messages'), comp = $('composer');
+  $('conv-title').textContent = conv ? conv.title : '新对话';
+  $('modehint').textContent = settings.mode === 'parallel' ? '并行模式' : '顺序模式';
+
+  if (!conv) {
+    w.classList.remove('hidden'); m.classList.add('hidden'); comp.classList.add('hidden');
+    return;
+  }
+  w.classList.add('hidden'); m.classList.remove('hidden'); comp.classList.remove('hidden');
+  m.innerHTML = '';
+  const li = lastVisibleIndex();
+  conv.messages.forEach((msg, i) => {
+    if (msg.internal) return;
+    m.appendChild(renderMsg(msg, i, i === li));
+  });
+  scrollBottom(true);
+}
+
+function renderMsg(msg, idx, isLast) {
+  const wrap = document.createElement('div');
+  wrap.className = 'msg ' + (msg.role === 'user' ? 'user' : 'ai');
+
+  const mac = msg.role === 'user' ? null : getName(msg.machineId);
+  const name = msg.role === 'user' ? 'Nefe' : (msg.name || (mac && mac.name) || 'AI');
+  const color = msg.role === 'user' ? '#4a6fa5' : (msg.color || (mac && mac.color) || '#7aa2f7');
+
+  const av = document.createElement('div');
+  av.className = 'avatar';
+  av.style.background = 'linear-gradient(135deg,' + color + ',' + color + '99)';
+  av.textContent = (name || '?').slice(0, 1).toUpperCase();
+
+  const col = document.createElement('div');
+  col.className = 'col';
+
+  const sd = document.createElement('div');
+  sd.className = 'sender';
+  sd.textContent = name + (msg.role === 'user' ? '' : '  ·  ' + hhmm(msg.ts));
+  col.appendChild(sd);
+
+  const bub = document.createElement('div');
+  bub.className = 'bubble';
+
+  (msg.images || []).forEach(src => {
+    const im = document.createElement('img');
+    im.src = src; bub.appendChild(im);
+  });
+
+  (msg.toolCalls || []).forEach(tc => bub.appendChild(toolCard(tc)));
+
+  if (msg.content) {
+    const d = document.createElement('div');
+    d.className = 'md-body';
+    d.innerHTML = md(msg.content);
+    bub.appendChild(d);
+  }
+
+  if (!msg.content && !(msg.images || []).length && !(msg.toolCalls || []).length) {
+    bub.innerHTML = '<span class="typing"><span></span><span></span><span></span></span>';
+  }
+  col.appendChild(bub);
+
+  const tools = document.createElement('div');
+  tools.className = 'tools';
+  const cp = document.createElement('button');
+  cp.textContent = '复制';
+  cp.onclick = () => { try { navigator.clipboard.writeText(msg.content || ''); toast('已复制', 'ok'); } catch (e) {} };
+  tools.appendChild(cp);
+  if (msg.role !== 'user' && isLast) {
+    const rg = document.createElement('button');
+    rg.textContent = '重生成';
+    rg.onclick = regenerate;
+    tools.appendChild(rg);
+  }
+  col.appendChild(tools);
+
+  wrap.appendChild(av); wrap.appendChild(col);
+  return wrap;
+}
+
+function toolCard(tc) {
+  const d = document.createElement('div');
+  d.className = 'toolcard';
+  const st = tc.status === 'running' ? '<span class="spin">◌</span>' : (tc.status === 'error' ? '✕' : '✓');
+  let h = '<div class="th">' + st + ' ' + esc(tc.name) + '</div>';
+  d.innerHTML = h;
+  if (tc.args) {
+    const b = document.createElement('div');
+    b.className = 'tb';
+    b.textContent = typeof tc.args === 'string' ? tc.args : JSON.stringify(tc.args, null, 2);
+    d.appendChild(b);
+  }
+  if (tc.result) {
+    const b2 = document.createElement('div');
+    b2.className = 'tb';
+    b2.style.borderTop = '1px solid #2a3140';
+    b2.textContent = typeof tc.result === 'string' ? tc.result : JSON.stringify(tc.result, null, 2);
+    d.appendChild(b2);
+  }
+  return d;
+}
+
+function scrollBottom(force) {
+  const el = $('messages'); if (!el) return;
+  if (force || el.scrollHeight - el.scrollTop - el.clientHeight < 160) el.scrollTop = el.scrollHeight;
+}
+
+function patchLast(msg) {
+  const el = $('messages'); if (!el) return;
+  const wraps = el.querySelectorAll('.msg');
+  const last = wraps[wraps.length - 1];
+  if (!last) return;
+  const bub = last.querySelector('.bubble'); if (!bub) return;
+  let d = bub.querySelector('.md-body');
+  if (!d) { d = document.createElement('div'); d.className = 'md-body'; bub.appendChild(d); }
+  d.innerHTML = md(msg.content);
+  scrollBottom(false);
+}
+
+/* ==================================================================
+   5. 输入 & 图片
+   ================================================================== */
+const inp = () => $('input');
+
+function addImg(file) {
+  if (!file || !file.type || file.type.indexOf('image/') !== 0) return;
+  const r = new FileReader();
+  r.onload = () => { pending.push({ dataUrl: r.result }); renderAtts(); };
+  r.readAsDataURL(file);
+}
+
+function renderAtts() {
+  const el = $('atts'); if (!el) return;
+  el.innerHTML = pending.map((p, i) =>
+    '<div class="att"><img src="' + p.dataUrl + '"><div class="x" onclick="rmImg(' + i + ')">×</div></div>').join('');
+}
+function rmImg(i) { pending.splice(i, 1); renderAtts(); }
+
+function onSendClick() {
+  if (busy) { stopGen(); return; }
+  sendMessage();
+}
+
+function stopGen() {
+  if (abortCtl) { try { abortCtl.abort(); } catch (e) {} }
+  busy = false; updateSend(); toast('已停止');
+}
+
+function updateSend() {
+  const b = $('send'); if (!b) return;
+  b.classList.toggle('stop', busy);
+  b.title = busy ? '停止' : '发送';
+  b.innerHTML = busy
+    ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>'
+    : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>';
+}
+
+/* ==================================================================
+   6. @mention & 发送
+   ================================================================== */
+function pick(text) {
+  const on = settings.machines.filter(m => m.enabled);
+  if (!on.length) return [];
+  const hit = on.filter(m => {
+    const s = m.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp('@' + s + '(?![\\w\\u4e00-\\u9fa5])').test(text);
+  });
+  return hit.length ? hit : on;
+}
+
+async function sendMessage() {
+  if (busy) return;
+  if (!curConv()) newConv(true);
+  const conv = curConv();
+  const text = inp().value.trim();
+  if (!text && !pending.length) return;
+
+  const on = settings.machines.filter(m => m.enabled);
+  if (!on.length) { toast('没有启用的机', 'err'); openSettings(); return; }
+  if (!on.some(m => m.apiKey)) { toast('还没填 API Key', 'err'); openSettings(); return; }
+
+  conv.messages.push({ role: 'user', content: text, images: pending.map(p => p.dataUrl), ts: Date.now() });
+  if (conv.title === '新对话' && text) conv.title = text.slice(0, 24);
+
+  inp().value = '';
+  if (inp()) inp().style.height = 'auto';
+  pending = []; renderAtts();
+  saveConv(); renderList(); renderChat();
+
+  await runMachines(conv, pick(text));
+}
+
+async function runMachines(conv, targets) {
+  busy = true; updateSend();
+  abortCtl = new AbortController();
+  try {
+    if (settings.mode === 'parallel' && targets.length > 1) {
+      await Promise.all(targets.map(m => runOne(conv, m)));
+    } else {
+      for (const m of targets) await runOne(conv, m);
+    }
+  } catch (e) {
+    if (e && e.name !== 'AbortError') toast('出错：' + e.message, 'err');
+  } finally {
+    busy = false; abortCtl = null; updateSend();
+    saveConv(); renderChat();
+  }
+}
+
+async function runOne(conv, machine) {
+  const msg = { role: 'assistant', machineId: machine.id, name: machine.name,
+    color: machine.color, content: '', toolCalls: [], ts: Date.now() };
+  conv.messages.push(msg);
+  renderChat();
+  try {
+    await agentLoop(conv, machine, msg);
+  } catch (e) {
+    if (e && e.name === 'AbortError') msg.content = msg.content || '（已停止）';
+    else msg.content = (msg.content ? msg.content + '\n\n' : '') + '⚠️ 请求失败：' + (e ? e.message : e);
+  }
+  renderChat(); saveConv();
+}
+
+/* ==================================================================
+   7. Agent 工具循环
+   ================================================================== */
+async function agentLoop(conv, machine, msg) {
+  let tools = [];
+  if (settings.mcpEnabled) tools = await mcpList().catch(() => []);
+
+  for (let r = 0; r < settings.maxToolRounds; r++) {
+    const res = await callModel(conv, machine, tools);
+    if (!res.toolUses.length) { saveConv(); return; }
+
+    conv.messages.push({ role: 'assistant', machineId: machine.id, name: machine.name,
+      color: machine.color, content: msg.content, toolUses: res.toolUses,
+      ts: Date.now(), internal: true });
+
+    const results = [];
+    for (const tu of res.toolUses) {
+      const card = { name: tu.name, args: tu.input, status: 'running', result: '' };
+      msg.toolCalls.push(card);
+      renderChat();
+      try {
+        const out = await execTool(machine, tu.name, tu.input);
+        card.status = out.error ? 'error' : 'ok';
+        card.result = out.error ? out.error : out.text;
+      } catch (e) {
+        card.status = 'error';
+        card.result = String((e && e.message) || e);
+      }
+      results.push({ id: tu.id, name: tu.name, content: String(card.result == null ? '' : card.result) });
+      renderChat();
+    }
+
+    conv.messages.push({ role: 'tool_results', machineId: machine.id, results,
+      ts: Date.now(), internal: true });
+  }
+  if (msg.content) msg.content += '\n\n_(已达工具调用轮数上限)_';
+}
+
+/* ==================================================================
+   8. 历史（provider 无关）
+   ================================================================== */
+function buildHistory(conv) {
+  const out = [];
+  for (const m of conv.messages) {
+    if (m.role === 'user') {
+      const parts = [];
+      if (m.content) parts.push({ type: 'text', text: m.content });
+      (m.images || []).forEach(d => parts.push({ type: 'image', dataUrl: d }));
+      out.push({ role: 'user', parts });
+    } else if (m.role === 'assistant') {
+      if (m.internal && !(m.toolUses && m.toolUses.length)) continue;
+      out.push({ role: 'assistant', text: m.content || '', toolUses: m.toolUses || [] });
+    } else if (m.role === 'tool_results') {
+      out.push({ role: 'tool_results', results: m.results || [] });
+    }
+  }
+  return out;
+}
+
+function toBase64(dataUrl) {
+  const m = /^data:([^;]+);base64,(.*)$/.exec(dataUrl || '');
+  return m ? { mediaType: m[1], data: m[2] } : null;
+}
+
+/* ==================================================================
+   9. Provider
+   ================================================================== */
+async function callModel(conv, machine, tools) {
+  const history = buildHistory(conv);
+  const sys = [machine.systemPrompt].filter(Boolean);
+  const mem = memFor(machine);
+  if (mem) sys.push(mem);
+
+  const others = settings.machines.filter(m => m.enabled && m.id !== machine.id);
+  if (others.length) {
+    sys.push('当前是多机群聊。你的名字是「' + machine.name + '」。其他成员：' +
+      others.map(m => '「' + m.name + '」').join('、') + '。');
+  }
+  const system = sys.join('\n\n');
+
+  return machine.provider === 'anthropic'
+    ? runAnthropic(machine, system, history, tools)
+    : runOpenAI(machine, system, history, tools);
+}
+
+const trimBase = b => (b || '').replace(/\/+$/, '');
+
+async function runAnthropic(machine, system, history, tools) {
+  const url = trimBase(machine.baseUrl) + '/v1/messages';
+  const messages = [];
+
+  for (const m of history) {
+    if (m.role === 'user') {
+      const c = m.parts.map(p => {
+        if (p.type === 'text') return { type: 'text', text: p.text };
+        const b = toBase64(p.dataUrl);
+        return b ? { type: 'image', source: { type: 'base64', media_type: b.mediaType, data: b.data } } : null;
+      }).filter(Boolean);
+      messages.push({ role: 'user', content: c.length ? c : [{ type: 'text', text: '...' }] });
+    } else if (m.role === 'assistant') {
+      const blocks = [];
+      if (m.text) blocks.push({ type: 'text', text: m.text });
+      (m.toolUses || []).forEach(tu => blocks.push({ type: 'tool_use', id: tu.id, name: tu.name, input: tu.input || {} }));
+      if (blocks.length) messages.push({ role: 'assistant', content: blocks });
+    } else if (m.role === 'tool_results') {
+      messages.push({ role: 'user', content: m.results.map(r =>
+        ({ type: 'tool_result', tool_use_id: r.id, content: r.content })) });
+    }
+  }
+
+  const body = { model: machine.model, max_tokens: machine.maxTokens || 4096,
+    temperature: machine.temperature == null ? 0.7 : machine.temperature, messages, stream: true };
+  if (system) body.system = system;
+  if (tools.length) body.tools = tools.map(t => ({ name: t.name, description: t.description, input_schema: t.inputSchema }));
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': machine.apiKey,
+      'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify(body),
+    signal: abortCtl ? abortCtl.signal : undefined,
+  });
+  if (!res.ok) throw new Error(await readErr(res));
+
+  let text = '';
+  const toolUses = [], buf = {};
+  await readSSE(res, ev => {
+    if (ev.type === 'content_block_start' && ev.content_block && ev.content_block.type === 'tool_use') {
+      buf[ev.index] = { id: ev.content_block.id, name: ev.content_block.name, json: '' };
+    } else if (ev.type === 'content_block_delta') {
+      if (ev.delta && ev.delta.type === 'text_delta') {
+        text += ev.delta.text;
+        liveText(text);
+      } else if (ev.delta && ev.delta.type === 'input_json_delta') {
+        if (buf[ev.index]) buf[ev.index].json += ev.delta.partial_json;
+      }
+    } else if (ev.type === 'content_block_stop') {
+      const t = buf[ev.index];
+      if (t) {
+        let input = {};
+        try { input = JSON.parse(t.json || '{}'); } catch (e) {}
+        toolUses.push({ id: t.id, name: t.name, input });
+      }
+    } else if (ev.type === 'error') {
+      throw new Error((ev.error && ev.error.message) || 'API error');
+    }
+  });
+  return { text, toolUses };
+}
+
+async function runOpenAI(machine, system, history, tools) {
+  const url = trimBase(machine.baseUrl) + '/v1/chat/completions';
+  const messages = [];
+  if (system) messages.push({ role: 'system', content: system });
+
+  for (const m of history) {
+    if (m.role === 'user') {
+      const hasImg = m.parts.some(p => p.type === 'image');
+      if (hasImg) {
+        messages.push({ role: 'user', content: m.parts.map(p => p.type === 'text'
+          ? { type: 'text', text: p.text }
+          : { type: 'image_url', image_url: { url: p.dataUrl } }) });
+      } else {
+        messages.push({ role: 'user', content: m.parts.map(p => p.text).join('\n') });
+      }
+    } else if (m.role === 'assistant') {
+      const o = { role: 'assistant', content: m.text || '' };
+      if (m.toolUses && m.toolUses.length) {
+        o.tool_calls = m.toolUses.map(tu => ({ id: tu.id, type: 'function',
+          function: { name: tu.name, arguments: JSON.stringify(tu.input || {}) } }));
+        if (!o.content) delete o.content;
+      }
+      messages.push(o);
+    } else if (m.role === 'tool_results') {
+      m.results.forEach(r => messages.push({ role: 'tool', tool_call_id: r.id, content: r.content }));
+    }
+  }
+
+  const body = { model: machine.model, messages, stream: true,
+    temperature: machine.temperature == null ? 0.7 : machine.temperature };
+  if (machine.maxTokens) body.max_tokens = machine.maxTokens;
+  if (tools.length) body.tools = tools.map(t => ({ type: 'function',
+    function: { name: t.name, description: t.description, parameters: t.inputSchema } }));
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + machine.apiKey },
+    body: JSON.stringify(body),
+    signal: abortCtl ? abortCtl.signal : undefined,
+  });
+  if (!res.ok) throw new Error(await readErr(res));
+
+  let text = '';
+  const buf = {};
+  await readSSE(res, ev => {
+    const d = ev.choices && ev.choices[0] && ev.choices[0].delta;
+    if (!d) return;
+    if (d.content) { text += d.content; liveText(text); }
+    if (d.tool_calls) {
+      for (const tc of d.tool_calls) {
+        const i = tc.index == null ? 0 : tc.index;
+        if (!buf[i]) buf[i] = { id: tc.id || ('call_' + i), name: '', args: '' };
+        if (tc.id) buf[i].id = tc.id;
+        if (tc.function && tc.function.name) buf[i].name += tc.function.name;
+        if (tc.function && tc.function.arguments) buf[i].args += tc.function.arguments;
+      }
+    }
+  });
+
+  const toolUses = Object.keys(buf).map(k => {
+    let input = {};
+    try { input = JSON.parse(buf[k].args || '{}'); } catch (e) {}
+    return { id: buf[k].id, name: buf[k].name, input };
+  });
+  return { text, toolUses };
+}
+
+/* 流式时把文字写进当前气泡 */
+function liveText(text) {
+  const conv = curConv(); if (!conv) return;
+  for (let i = conv.messages.length - 1; i >= 0; i--) {
+    if (!conv.messages[i].internal) { conv.messages[i].content = text; patchLast(conv.messages[i]); break; }
+  }
+}
+
+async function readErr(res) {
+  let d = '';
+  try {
+    const t = await res.text();
+    try { const j = JSON.parse(t); d = (j.error && j.error.message) || j.message || t; }
+    catch (e) { d = t; }
+  } catch (e) {}
+  return 'HTTP ' + res.status + ' ' + res.statusText + (d ? ' — ' + String(d).slice(0, 400) : '');
+}
+
+async function readSSE(res, onEvent) {
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  let buf = '';
+  for (;;) {
+    const r = await reader.read();
+    if (r.done) break;
+    buf += dec.decode(r.value, { stream: true });
+    let i;
+    while ((i = buf.indexOf('\n\n')) >= 0) {
+      const chunk = buf.slice(0, i);
+      buf = buf.slice(i + 2);
+      for (const line of chunk.split('\n')) {
+        const l = line.trim();
+        if (l.indexOf('data:') !== 0) continue;
+        const p = l.slice(5).trim();
+        if (!p || p === '[DONE]') continue;
+        try { onEvent(JSON.parse(p)); } catch (e) {}
+      }
+    }
+  }
+}
+
+/* ==================================================================
+   10. MCP 客户端 & hub 管理
+   ================================================================== */
+async function mcpRpc(method, params) {
+  const res = await fetch(settings.mcpUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: uid(), method, params }),
+  });
+  if (!res.ok) throw new Error('MCP HTTP ' + res.status);
+  const j = await res.json();
+  if (j.error) throw new Error(j.error.message || 'MCP error');
+  return j.result;
+}
+
+async function mcpList() {
+  if (mcpCache) return mcpCache;
+  await mcpRpc('initialize', { protocolVersion: '2024-11-05', capabilities: {},
+    clientInfo: { name: 'home-draft', version: '1.0.0' } });
+  const r = await mcpRpc('tools/list', {});
+  mcpCache = r.tools || [];
+  return mcpCache;
+}
+
+async function execTool(machine, name, args) {
+  const tool = (mcpCache || []).find(t => t.name === name);
+  if (settings.confirmTools && tool && tool.confirm) {
+    const ok = await askConfirm('「' + machine.name + '」想调用工具',
+      name + '\n\n参数：\n' + JSON.stringify(args, null, 2));
+    if (!ok) return { error: '用户拒绝了这次工具调用' };
+  }
+  const r = await mcpRpc('tools/call', { name, arguments: args });
+  const text = (r.content || []).map(c => c.text || '').join('\n');
+  if (r.isError) return { error: text || '工具执行失败' };
+  return { text };
+}
+
+async function testMcp() {
+  try { mcpCache = null; const t = await mcpList(); return { ok: true, count: t.length }; }
+  catch (e) { return { ok: false, error: e.message }; }
+}
+
+async function refreshBadge() {
+  const el = $('mcpbadge'); if (!el) return;
+  if (!settings.mcpEnabled) { el.textContent = 'MCP 关闭'; el.className = 'badge'; return; }
+  const r = await testMcp();
+  el.textContent = r.ok ? ('MCP ' + r.count + ' 工具') : 'MCP 未连接';
+  el.className = 'badge ' + (r.ok ? 'on' : 'off');
+}
+
+function memFor(machine) {
+  const l = memories.filter(m => !m.machineId || m.machineId === 'all' || m.machineId === machine.id);
+  return l.length ? '## 你记得的事\n' + l.map(m => '- ' + m.content).join('\n') : '';
+}
+
+/* ==================================================================
+   11. 模态 & 确认
+   ================================================================== */
+function openModal(html) {
+  $('modal').innerHTML = '<div class="mask" onclick="if(event.target===this)closeModal()">'
+    + '<div class="modal">' + html + '</div></div>';
+}
+function closeModal() { $('modal').innerHTML = ''; }
+
+function askConfirm(title, body) {
+  return new Promise(resolve => {
+    openModal('<div class="mhead"><h2>' + esc(title) + '</h2></div>' +
+      '<div class="mbody"><pre style="white-space:pre-wrap;font-size:12px;color:#9aa4b5;font-family:Consolas,monospace">' +
+      esc(body) + '</pre></div><div class="mfoot">' +
+      '<button class="btn ghost" id="cfno">拒绝</button>' +
+      '<button class="btn primary" id="cfyes">允许</button></div>');
+    $('cfno').onclick = () => { closeModal(); resolve(false); };
+    $('cfyes').onclick = () => { closeModal(); resolve(true); };
+  });
+}
+
+/* ==================================================================
+   12. 设置面板
+   ================================================================== */
+function openSettings() { renderSettings(); }
+
+function renderSettings() {
+  const tabs = [['provider', 'Provider'], ['machines', '机'], ['mcp', 'MCP'],
+    ['memory', '记忆'], ['general', '通用']];
+  openModal(
+    '<div class="mhead"><h2>设置</h2><button class="icon-btn" onclick="closeModal()">✕</button></div>' +
+    '<div class="tabs">' + tabs.map(t =>
+      '<div class="tab' + (tab === t[0] ? ' active' : '') + '" onclick="tab=\'' + t[0] + '\';renderSettings()">' + t[1] + '</div>'
+    ).join('') + '</div>' +
+    '<div class="mbody" id="setbody"></div>' +
+    '<div class="mfoot"><button class="btn primary" onclick="saveAll()">保存</button></div>');
+
+  $('setbody').innerHTML = tabHtml();
+  bindFields();
+}
+
+function tabHtml() {
+  if (tab === 'provider') {
+    return '' +
+      '<div class="field"><label>对话模式</label><select id="f-mode">' +
+      '<option value="sequential"' + (settings.mode === 'sequential' ? ' selected' : '') + '>顺序（A 回完 → B 看着再回）</option>' +
+      '<option value="parallel"' + (settings.mode === 'parallel' ? ' selected' : '') + '>并行（同时发，各自回）</option>' +
+      '</select></div>' +
+      '<div class="field"><label>工具调用最大轮数</label><input type="number" id="f-rounds" min="1" max="20" value="' + settings.maxToolRounds + '"></div>' +
+      '<div class="desc">消息里写 @机名 只触发那一台。</div>';
+  }
+
+  if (tab === 'machines') {
+    if (!settings.machines.length) settings.machines = JSON.parse(JSON.stringify(DEF.machines));
+    return settings.machines.map((m, i) => {
+      const filled = m.apiKey && m.apiKey.length;
+      const preview = filled ? (m.apiKey.slice(0, 7) + '…' + m.apiKey.slice(-4)) : '';
+      return '' +
+      '<div class="machine">' +
+        '<div class="mh"><span class="c" style="background:' + esc(m.color) + '"></span>' +
+        '<span class="n">' + esc(m.name) + '</span><div class="a">' +
+        '<button class="btn sm ghost" onclick="toggleMachine(' + i + ')">' + (m.enabled ? '启用中' : '已停用') + '</button>' +
+        (settings.machines.length > 1 ? '<button class="btn sm danger" onclick="removeMachine(' + i + ')">删除</button>' : '') +
+        '</div></div>' +
+        '<div class="row2">' +
+        '<div class="field"><label>名字</label><input data-i="' + i + '" data-k="name" value="' + esc(m.name) + '"></div>' +
+        '<div class="field"><label>颜色</label><input type="color" data-i="' + i + '" data-k="color" value="' + esc(m.color) + '"></div>' +
+        '</div>' +
+        '<div class="field"><label>Provider</label><select data-i="' + i + '" data-k="provider">' +
+        '<option value="anthropic"' + (m.provider === 'anthropic' ? ' selected' : '') + '>Anthropic 原生</option>' +
+        '<option value="openai"' + (m.provider === 'openai' ? ' selected' : '') + '>OpenAI 兼容</option>' +
+        '</select></div>' +
+        '<div class="field"><label>Base URL</label><input data-i="' + i + '" data-k="baseUrl" value="' + esc(m.baseUrl) + '" placeholder="https://api.anthropic.com">' +
+        '<div class="desc">只填域名，不要带 /v1</div></div>' +
+        '<div class="field"><label>API Key</label><input type="password" data-i="' + i + '" data-k="apiKey" value="' + esc(m.apiKey) + '" placeholder="sk-...">' +
+        '<div class="desc" id="keystat-' + i + '">' + (filled ? '已填写：' + esc(preview) : '未填写') + '</div></div>' +
+        '<div class="row2">' +
+        '<div class="field"><label>模型名</label><input data-i="' + i + '" data-k="model" value="' + esc(m.model) + '"></div>' +
+        '<div class="field"><label>max_tokens</label><input type="number" data-i="' + i + '" data-k="maxTokens" value="' + (m.maxTokens || 4096) + '"></div>' +
+        '</div>' +
+        '<div class="field"><label>System Prompt</label><textarea data-i="' + i + '" data-k="systemPrompt">' + esc(m.systemPrompt || '') + '</textarea></div>' +
+      '</div>';
+    }).join('') +
+    '<button class="btn ghost" style="width:100%" onclick="addMachine()">+ 添加一台机</button>';
+  }
+
+  if (tab === 'mcp') {
+    return '' +
+      '<div class="sw"><div><div class="l">启用 MCP 工具（hub）</div>' +
+      '<div class="d">包含内置文件/命令工具 + 第三方 server</div></div>' +
+      '<div class="tg' + (settings.mcpEnabled ? ' on' : '') + '" onclick="toggleSet(\'mcpEnabled\')"></div></div>' +
+      '<div class="field" style="margin-top:14px"><label>Hub 地址</label>' +
+      '<input id="f-mcpurl" value="' + esc(settings.mcpUrl) + '"></div>' +
+      '<div class="sw"><div><div class="l">工具调用前需确认</div>' +
+      '<div class="d">删除/移动/执行命令 + 外置工具（按 server 各自开关）</div></div>' +
+      '<div class="tg' + (settings.confirmTools ? ' on' : '') + '" onclick="toggleSet(\'confirmTools\')"></div></div>' +
+      '<div style="margin-top:14px"><button class="btn ghost" onclick="testMcpBtn(this)">测试 hub</button></div>' +
+      '<div class="desc" id="mcptest"></div>' +
+      '<div style="margin-top:18px;border-top:1px solid #2a3140;padding-top:14px">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
+          '<div class="l" style="font-size:13px">第三方 MCP Server</div>' +
+          '<button class="btn sm primary" onclick="addMcpServer()">+ 添加</button>' +
+        '</div>' +
+        '<div id="mcp-servers" style="display:flex;flex-direction:column;gap:8px">加载中…</div>' +
+        '<div class="desc" style="margin-top:10px;line-height:1.8">' +
+        '三种类型：<b>Streamable HTTP</b>（含 SSE 响应）、<b>老式 SSE</b>（GET /sse 开流）、<b>本地 stdio</b>（npx 等）。<br>' +
+        'HTTP 型可填请求头（Authorization 等）；SSE / 普通 JSON 响应都兼容。<br>' +
+        '每次增删改都即时保存生效，配置存在 mcp_server/mcp_config.json。</div>' +
+      '</div>';
+  }
+
+  if (tab === 'memory') {
+    return '' +
+      '<div class="desc" style="margin-bottom:12px">记忆每次对话都会注入。换 provider 不会丢。</div>' +
+      '<div class="field"><label>新增记忆</label><textarea id="f-mem" placeholder="例如：Nefe 晚上容易失眠，说话温柔一点"></textarea></div>' +
+      '<div class="field"><label>归属</label><select id="f-memto"><option value="all">所有机共享</option>' +
+      settings.machines.map(m => '<option value="' + esc(m.id) + '">仅 ' + esc(m.name) + '</option>').join('') +
+      '</select></div>' +
+      '<button class="btn primary sm" onclick="addMem()">添加</button>' +
+      '<div style="margin-top:16px">' +
+      (memories.length ? memories.map((m, i) =>
+        '<div class="mem"><div class="mt"><span>' +
+        (m.machineId === 'all' ? '共享' : esc((getName(m.machineId) || {}).name || m.machineId)) +
+        ' · ' + new Date(m.ts).toLocaleDateString() + '</span>' +
+        '<span style="cursor:pointer;color:#f7768e" onclick="delMem(' + i + ')">删除</span></div>' +
+        '<div>' + esc(m.content) + '</div></div>').join('') : '<div class="desc">还没有记忆</div>') +
+      '</div>';
+  }
+
+  return '' +
+    '<div class="desc" style="margin-bottom:14px;line-height:1.9">home-draft · 本地版<br>' +
+    '数据存在浏览器 localStorage，清理浏览器数据会一起清掉。</div>' +
+    '<div class="sw"><div><div class="l">导出全部</div><div class="d">导出为 JSON（剔除 API Key）</div></div>' +
+    '<button class="btn sm ghost" onclick="exportAll()">导出</button></div>' +
+    '<div class="sw"><div><div class="l">清空所有数据</div><div class="d">对话 + 记忆 + 设置，不可恢复</div></div>' +
+    '<button class="btn sm danger" onclick="wipeAll()">清空</button></div>';
+}
+
+function bindFields() {
+  const body = $('setbody');
+  body.querySelectorAll('[data-k]').forEach(el => {
+    el.onchange = el.oninput = () => {
+      const i = +el.dataset.i, k = el.dataset.k;
+      let v = el.value;
+      if (k === 'maxTokens') v = parseInt(v, 10) || 4096;
+      settings.machines[i][k] = v;
+      if (k === 'apiKey') {
+        const st = $('keystat-' + i);
+        if (st) st.textContent = v ? ('已填写：' + v.slice(0, 7) + '…' + v.slice(-4)) : '未填写';
+      }
+      if (k === 'name' || k === 'color') renderList();
+    };
+  });
+  const mo = $('f-mode');
+  if (mo) mo.onchange = () => { settings.mode = mo.value; renderChat(); };
+  const ro = $('f-rounds');
+  if (ro) ro.onchange = () => { settings.maxToolRounds = Math.max(1, parseInt(ro.value, 10) || 6); };
+  const mu = $('f-mcpurl');
+  if (mu) mu.onchange = () => { settings.mcpUrl = mu.value.trim(); mcpCache = null; };
+  if (tab === 'mcp') renderMcpServers();
+}
+
+function saveAll() {
+  if (!settings.mcpUrl || !settings.mcpUrl.trim()) settings.mcpUrl = DEF.mcpUrl;
+  const ok = saveSet();
+  refreshBadge(); renderChat();
+  if (ok) {
+    const m0 = settings.machines[0];
+    const keyInfo = m0 && m0.apiKey
+      ? ('；' + m0.name + ' 的 Key 已保存 ' + m0.apiKey.length + ' 位')
+      : '；注意：还没有填 API Key';
+    toast('已保存' + keyInfo, m0 && m0.apiKey ? 'ok' : 'err');
+  }
+}
+
+function toggleSet(k) { settings[k] = !settings[k]; mcpCache = null; saveSet(); renderSettings(); refreshBadge(); }
+function toggleMachine(i) { settings.machines[i].enabled = !settings.machines[i].enabled; saveSet(); renderSettings(); }
+
+function addMachine() {
+  const pal = ['#7aa2f7', '#bb9af7', '#9ece6a', '#e0af68', '#f7768e', '#7dcfff'];
+  settings.machines.push({ id: uid(), name: '机' + (settings.machines.length + 1),
+    color: pal[settings.machines.length % pal.length], enabled: true, provider: 'openai',
+    baseUrl: 'https://api.openai.com', apiKey: '', model: 'gpt-4o', systemPrompt: '',
+    maxTokens: 4096, temperature: 0.7 });
+  saveSet(); renderSettings();
+}
+
+function removeMachine(i) {
+  if (!confirm('删除这台机？')) return;
+  settings.machines.splice(i, 1); saveSet(); renderSettings();
+}
+
+async function testMcpBtn(btn) {
+  const out = $('mcptest');
+  btn.disabled = true; out.textContent = '连接中…';
+  const r = await testMcp();
+  btn.disabled = false;
+  if (r.ok) { out.innerHTML = '<span style="color:#9ece6a">✓ 连上了，' + r.count + ' 个工具可用</span>'; refreshBadge(); }
+  else out.innerHTML = '<span style="color:#f7768e">✕ ' + esc(r.error) + '</span><br>检查：MCP 窗口还开着吗 / 地址对吗';
+}
+
+/* ========================== 第三方 MCP Server 管理 ========================== */
+function hdrToText(h) {
+  try { return Object.keys(h || {}).map(k => k + ': ' + h[k]).join('；'); } catch (e) { return ''; }
+}
+function textToHdr(t) {
+  const out = {};
+  const lines = String(t || '').split('\n').map(x => x.trim()).filter(Boolean);
+  for (const ln of lines) {
+    const i = ln.indexOf(':');
+    if (i <= 0) return { error: '请求头格式：每行「名称: 值」' };
+    out[ln.slice(0, i).trim()] = ln.slice(i + 1).trim();
+  }
+  return out;
+}
+function renderMcpServers() {
+  const box = $('mcp-servers');
+  if (!box) return;
+  mcpRpc('hub/config/get', {}).then(r => {
+    extServers = (r.servers || []).map(s => ({
+      name: s.name, transport: s.transport, url: s.url, command: s.command,
+      args: (s.args || []).join(','), confirm: !!s.confirm, enabled: !!s.enabled,
+      headers: s.headers || {}, hText: hdrToText(s.headers || {}),
+      status: s.status || 'stopped', error: s.error || '', toolCount: s.toolCount || 0,
+    }));
+    paintServers();
+  }).catch(e => {
+    box.innerHTML = '<div style="color:#f7768e">读不到 hub：' + esc(e.message) + '</div>';
+  });
+}
+
+function paintServers() {
+  const box = $('mcp-servers');
+  if (!box) return;
+  if (!extServers.length) {
+    box.innerHTML = '<div class="desc">还没有第三方 server。支持远程 HTTP MCP 和本地 stdio（npx 等）。</div>';
+    return;
+  }
+  box.innerHTML = extServers.map((s, i) =>
+    '<div class="machine" style="padding:10px">' +
+      '<div class="mh"><span class="n">' + esc(s.name) + '</span>' +
+      '<span class="badge ' + (s.enabled ? (s.status === 'ok' ? 'on' : 'off') : '') + '" style="padding:2px 8px">' +
+        (s.enabled ? (s.status === 'ok' ? s.toolCount + ' 工具' : (s.status === 'error' ? '出错' : '未连接')) : '停用') +
+      '</span>' +
+      '<div class="a">' +
+        '<button class="btn sm ghost" onclick="toggleExt(' + i + ')">' + (s.enabled ? '停用' : '启用') + '</button>' +
+        '<button class="btn sm ghost" onclick="testExt(' + i + ')">测试</button>' +
+        '<button class="btn sm danger" onclick="delExt(' + i + ')">删除</button>' +
+      '</div></div>' +
+      '<div class="desc" style="margin-top:5px">' +
+        esc(s.transport === 'stdio' ? s.command + ' ' + s.args : s.url) +
+        (s.hText ? '（' + esc(s.hText) + '）' : '') +
+        (s.error ? ' <span style="color:#f7768e">' + esc(s.error) + '</span>' : '') +
+      '</div>' +
+    '</div>').join('');
+}
+
+function addMcpServer() {
+  openModal('<div class="mhead"><h2>添加 MCP Server</h2><button class="icon-btn" onclick="closeModal()">✕</button></div>' +
+    '<div class="mbody">' +
+    '<div class="field"><label>名字（给机看的，例如 filesearch）</label><input id="es-name" placeholder="filesearch"></div>' +
+    '<div class="field"><label>类型</label><select id="es-transport">' +
+    '<option value="http">远程 HTTP（Streamable / JSON / SSE 响应）</option>' +
+    '<option value="sse">老式 SSE（GET /sse 开流）</option>' +
+    '<option value="stdio">本地 stdio（npx 等命令）</option>' +
+    '</select></div>' +
+    '<div class="field" id="es-url-wrap"><label>URL</label><input id="es-url" placeholder="https://example.com/mcp"></div>' +
+    '<div class="field hidden" id="es-cmd-wrap"><label>命令</label><input id="es-cmd" placeholder="npx"></div>' +
+    '<div class="field hidden" id="es-args-wrap"><label>参数（逗号分隔）</label><input id="es-args" placeholder="-y,@modelcontextprotocol/server-filesystem,C:/你的目录"></div>' +
+    '<div class="field hidden" id="es-hdrs-wrap"><label>请求头（每行一个：名称: 值）</label><textarea id="es-hdrs" rows="3" placeholder="Authorization: Bearer xxx\nX-Api-Key: xxx"></textarea></div>' +
+    '<div class="field"><label><input type="checkbox" id="es-confirm" checked> 每次调用前要我确认</label></div>' +
+    '</div><div class="mfoot">' +
+    '<button class="btn ghost" onclick="closeModal()">取消</button>' +
+    '<button class="btn primary" onclick="saveExt()">加入</button></div>');
+  const sel = $('es-transport');
+  const sync = () => {
+    const useCmd = sel.value === 'stdio';
+    $('es-url-wrap').classList.toggle('hidden', useCmd);
+    $('es-cmd-wrap').classList.toggle('hidden', !useCmd);
+    $('es-args-wrap').classList.toggle('hidden', !useCmd);
+    $('es-hdrs-wrap').classList.toggle('hidden', useCmd);
+  };
+  sel.onchange = sync; sync();
+}
+
+function saveExt() {
+  const name = $('es-name').value.trim();
+  if (!name) { toast('名字不能空', 'err'); return; }
+  const isStdio = $('es-transport').value === 'stdio';
+  const s = { name, transport: isStdio ? 'stdio' : 'http', enabled: true, confirm: $('es-confirm').checked };
+  s.headers = {}; s.hText = '';
+  if (isStdio) {
+    if (!$('es-cmd').value.trim()) { toast('命令不能空', 'err'); return; }
+    s.command = $('es-cmd').value.trim();
+    s.args = $('es-args').value.split(',').map(x => x.trim()).filter(Boolean);
+    s.url = '';
+  } else {
+    if (!$('es-url').value.trim()) { toast('URL 不能空', 'err'); return; }
+    s.url = $('es-url').value.trim();
+    s.command = ''; s.args = [];
+    const h = textToHdr($('es-hdrs').value);
+    if (h && h.error) { toast(h.error, 'err'); return; }
+    s.headers = h; s.hText = hdrToText(h);
+  }
+  extServers.push(s);
+  closeModal();
+  paintServers();
+  saveServers();
+}
+
+function delExt(i) {
+  if (!confirm('删除这个 server？')) return;
+  extServers.splice(i, 1);
+  paintServers();
+  saveServers();
+}
+
+function toggleExt(i) {
+  extServers[i].enabled = !extServers[i].enabled;
+  paintServers();
+  saveServers();
+}
+
+async function testExt(i) {
+  const s = extServers[i];
+  try {
+    const r = await mcpRpc('hub/test', { server: {
+      name: s.name, transport: s.transport, url: s.url || '',
+      command: s.command || '', args: s.args || [], headers: s.headers || {}, confirm: s.confirm } });
+    toast((r.ok ? '✓ ' : '✕ ') + s.name + '：' + (r.message || ''), r.ok ? 'ok' : 'err');
+  } catch (e) { toast('测试失败：' + e.message, 'err'); }
+}
+
+async function saveServers() {
+  try {
+    const r = await mcpRpc('hub/config/update', { servers: extServers.map(s => ({
+      name: s.name, transport: s.transport, url: s.url || '', command: s.command || '',
+      args: (s.args || []), headers: s.headers || {}, confirm: s.confirm, enabled: s.enabled })) });
+    toast(r.ok ? '已保存并重连' : '保存失败：' + (r.message || ''), r.ok ? 'ok' : 'err');
+    mcpCache = null; refreshBadge();
+    setTimeout(renderMcpServers, 1400);
+  } catch (e) { toast('保存失败：' + e.message, 'err'); }
+}
+
+/* ==================================================================
+   13. 记忆 & 导出
+   ================================================================== */
+function addMem() {
+  const t = $('f-mem').value.trim();
+  if (!t) { toast('内容为空', 'err'); return; }
+  memories.push({ content: t, machineId: $('f-memto').value, ts: Date.now() });
+  saveMem(); renderSettings();
+  toast('已添加，记得点保存', 'ok');
+}
+function delMem(i) { memories.splice(i, 1); saveMem(); renderSettings(); }
+
+function openExport() {
+  const conv = curConv();
+  if (!conv) { toast('没有可导出的对话'); return; }
+  openModal('<div class="mhead"><h2>导出对话</h2><button class="icon-btn" onclick="closeModal()">✕</button></div>' +
+    '<div class="mbody"><div class="field"><label>格式</label>' +
+    '<select id="f-fmt"><option value="md">Markdown</option><option value="json">JSON</option></select>' +
+    '</div></div><div class="mfoot"><button class="btn primary" onclick="doExport()">下载</button></div>');
+}
+
+function doExport() {
+  const conv = curConv();
+  const fmt = $('f-fmt').value;
+  let content, mime, ext;
+  if (fmt === 'md') {
+    content = '# ' + conv.title + '\n\n' + conv.messages.filter(m => !m.internal).map(m =>
+      '## ' + (m.role === 'user' ? 'Nefe' : (m.name || 'AI')) + '\n\n' + m.content + '\n').join('\n---\n\n');
+    mime = 'text/markdown'; ext = 'md';
+  } else {
+    content = JSON.stringify(conv, null, 2);
+    mime = 'application/json'; ext = 'json';
+  }
+  dl(content, (conv.title || 'chat') + '.' + ext, mime);
+  closeModal();
+}
+
+function exportAll() {
+  dl(JSON.stringify({ conversations, memories,
+    settings: Object.assign({}, settings, {
+      machines: settings.machines.map(m => Object.assign({}, m, { apiKey: '' })) }) }, null, 2),
+    'home-draft-backup.json', 'application/json');
+  toast('已导出（Key 已剔除）', 'ok');
+}
+
+function dl(content, name, mime) {
+  const b = new Blob([content], { type: mime + ';charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(b);
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+function wipeAll() {
+  if (!confirm('清空所有数据？不可恢复。')) return;
+  if (!confirm('真的确定？')) return;
+  localStorage.clear();
+  location.reload();
+}
+
+/* 重生成：把尾部所有 assistant / internal 回合都清掉，否则留下孤儿 tool 结果 */
+async function regenerate() {
+  const conv = curConv();
+  if (!conv || busy) return;
+  while (conv.messages.length) {
+    const last = conv.messages[conv.messages.length - 1];
+    if (last.role === 'assistant' || last.internal) conv.messages.pop();
+    else break;
+  }
+  saveConv(); renderChat();
+  let t = '';
+  for (let i = conv.messages.length - 1; i >= 0; i--) {
+    if (conv.messages[i].role === 'user') { t = conv.messages[i].content || ''; break; }
+  }
+  await runMachines(conv, pick(t));
+}
+
+/* ==================================================================
+   14. 启动
+   ================================================================== */
+function init() {
+  const ta = inp();
+  updateSend();
+
+  ta.addEventListener('input', () => {
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 180) + 'px';
+  });
+
+  ta.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+      e.preventDefault();
+      if (!busy) sendMessage();
+    }
+  });
+
+  ta.addEventListener('paste', e => {
+    const items = (e.clipboardData && e.clipboardData.items) || [];
+    for (const it of items) {
+      if (it.type.indexOf('image/') === 0) {
+        const f = it.getAsFile();
+        if (f) { addImg(f); e.preventDefault(); }
+      }
+    }
+  });
+
+  document.addEventListener('dragover', e => e.preventDefault());
+  document.addEventListener('drop', e => {
+    e.preventDefault();
+    const fs = (e.dataTransfer && e.dataTransfer.files) || [];
+    for (const f of fs) addImg(f);
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  if (!conversations.length) newConv(true);
+  else if (!conversations.some(c => c.id === curId)) curId = conversations[0].id;
+
+  renderList(); renderChat(); refreshBadge();
+  setInterval(refreshBadge, 30000);
+
+  if (!settings.machines.some(m => m.apiKey)) {
+    setTimeout(() => toast('先去「设置」填 API Key'), 800);
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    try { init(); }
+    catch (e) { showErr('[初始化失败] ' + e.message + '\n' + (e.stack || '')); }
+  });
+} else {
+  try { init(); }
+  catch (e) { showErr('[初始化失败] ' + e.message + '\n' + (e.stack || '')); }
+}
+</script>
+</body>
+</html>
