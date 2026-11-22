@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-home-draft MCP hub v1.2.0
+home-draft MCP hub v1.2.1
 - 内置：文件工具 + 白名单命令工具
 - 第三方 MCP：远程 HTTP（streamable HTTP / JSON）、老式 SSE（GET /sse 开流）、本地 stdio（npx 等）
 配置在 mcp_config.json，也可在浏览器设置页里管理。
+
+v1.2.1 变更：
+- 新增自动探测：URL 以 /sse 结尾时，即使 type 填 http 也自动按老式 SSE 处理
+  （修前端下拉框保存为 http 的问题，用户无需改设置）
 """
 import json, os, re, sys, time, threading, subprocess, urllib.request, urllib.error
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -13,7 +17,7 @@ from urllib.parse import urlparse, urljoin
 HOST = "127.0.0.1"
 PORT = 8766
 HUB_NAME = "home-draft MCP hub"
-HUB_VERSION = "1.2.0"
+HUB_VERSION = "1.2.1"
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 CONFIG_FILE = os.path.join(BASE, "mcp_config.json")
@@ -34,14 +38,15 @@ def _log(msg):
 # ---------------- 工作根目录 ----------------
 def find_root():
     cur = BASE
-    for _ in range(6):
+    for _ in range(8):
         if os.path.exists(os.path.join(cur, ".home-draft-root")) or os.path.exists(os.path.join(cur, "SPEC.md")):
             return os.path.abspath(cur)
         parent = os.path.dirname(cur)
         if parent == cur:
             break
         cur = parent
-    return os.path.abspath(BASE)
+    # 没找到标记：往上两级（兼容 mcp_server 在项目根的直接子目录）
+    return os.path.abspath(os.path.dirname(BASE))
 
 
 ROOT = find_root()
@@ -496,6 +501,11 @@ class Endpoint:
         self.name = str(cfg.get("name") or "server")
         self.transport = str(cfg.get("transport") or "http")
         self.url = str(cfg.get("url") or "")
+        # ★ 自动探测：URL 以 /sse 结尾 → 一律按老式 SSE 处理
+        #   （前端保存 bug 会把 sse 存成 http，这里在后端兜底）
+        if self.transport == "http" and self.url.rstrip("/").lower().endswith("/sse"):
+            self.transport = "sse"
+            _log("auto-detect: %s 的 URL 以 /sse 结尾，改用老式 SSE" % self.name)
         self.command = str(cfg.get("command") or "")
         self.args = cfg.get("args") or []
         if isinstance(self.args, str):
@@ -527,16 +537,18 @@ class Endpoint:
                 except Exception as e:
                     self.status, self.error = "error", "启动失败: %s" % e
                     return False, "启动失败: %s" % e
+            elif self.transport == "sse":
+                if not self.url:
+                    self.status, self.error = "error", "URL 为空"
+                    return False, "URL 为空"
+                self.client = SseMCP(self.name, self.url, self.headers)
+                try:
+                    self.client.start()
+                except Exception as e:
+                    self.status, self.error = "error", "SSE 连接失败: %s" % e
+                    return False, "SSE 连接失败: %s" % e
             else:
-                if self.transport == "sse":
-                    self.client = SseMCP(self.name, self.url, self.headers)
-                    try:
-                        self.client.start()
-                    except Exception as e:
-                        self.status, self.error = "error", "SSE 连接失败: %s" % e
-                        return False, "SSE 连接失败: %s" % e
-                else:
-                    self.client = HttpMCP(self.name, self.url, self.headers)
+                self.client = HttpMCP(self.name, self.url, self.headers)
             self.status, self.error = "connecting", ""
         try:
             self._negotiate()
@@ -629,7 +641,7 @@ class Hub:
             if ep.enabled:
                 try:
                     ep.connect()
-                    _log("hub.connect %s: %s %s" % (ep.name, ep.status, ep.error))
+                    _log("hub.connect %s (%s): %s %s" % (ep.name, ep.transport, ep.status, ep.error))
                 except Exception as e:
                     ep.status, ep.error = "error", str(e)
 
@@ -720,6 +732,14 @@ def dispatch(method, params):
         return ok_(hub.update((params or {}).get("servers") or []))
     if method == "hub/test":
         return ok_(hub.test((params or {}).get("server") or {}))
+    if method == "hub/reconnect":
+        for ep in hub.endpoints:
+            try:
+                ep.stop()
+            except Exception:
+                pass
+        threading.Thread(target=hub.connect_all, daemon=True).start()
+        return ok_({"ok": True, "message": "已重新连接"})
     return err_(-32601, "未知方法: " + str(method))
 
 
@@ -751,7 +771,10 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if urlparse(self.path).path == "/health":
             self._send(200, {"status": "ok", "name": HUB_NAME, "version": HUB_VERSION,
-                             "tools": len(hub.merged_tools())})
+                             "tools": len(hub.merged_tools()),
+                             "servers": [{"name": e.name, "transport": e.transport,
+                                           "status": e.status, "error": e.error}
+                                          for e in hub.endpoints]})
             return
         self._send(404, err_(-32601, "not found"))
 
@@ -781,7 +804,7 @@ def main():
     print("  监听: http://%s:%d" % (HOST, PORT))
     print("  根目录: %s" % ROOT)
     print("  内置工具: %s" % ", ".join(t["name"] for t in TOOLS))
-    print("  第三方 MCP: mcp_config.json（可在前端设置页管理，支持 http / sse / stdio）")
+    print("  第三方 MCP: mcp_config.json（支持 http / sse / stdio，URL 以 /sse 结尾会自动识别）")
     print("  Ctrl+C 退出")
     print("=" * 58)
     _log("start v%s root=%s" % (HUB_VERSION, ROOT))
