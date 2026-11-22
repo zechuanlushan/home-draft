@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-home-draft MCP hub
+home-draft MCP hub v1.2.0
 - 内置：文件工具 + 白名单命令工具
-- 第三方 MCP：远程 HTTP（streamable HTTP / JSON）+ 本地 stdio（npx 等）
+- 第三方 MCP：远程 HTTP（streamable HTTP / JSON）、老式 SSE（GET /sse 开流）、本地 stdio（npx 等）
 配置在 mcp_config.json，也可在浏览器设置页里管理。
 """
 import json, os, re, sys, time, threading, subprocess, urllib.request, urllib.error
@@ -13,7 +13,7 @@ from urllib.parse import urlparse, urljoin
 HOST = "127.0.0.1"
 PORT = 8766
 HUB_NAME = "home-draft MCP hub"
-HUB_VERSION = "1.1.0"
+HUB_VERSION = "1.2.0"
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 CONFIG_FILE = os.path.join(BASE, "mcp_config.json")
@@ -781,7 +781,7 @@ def main():
     print("  监听: http://%s:%d" % (HOST, PORT))
     print("  根目录: %s" % ROOT)
     print("  内置工具: %s" % ", ".join(t["name"] for t in TOOLS))
-    print("  第三方 MCP: mcp_config.json（可在前端设置页管理）")
+    print("  第三方 MCP: mcp_config.json（可在前端设置页管理，支持 http / sse / stdio）")
     print("  Ctrl+C 退出")
     print("=" * 58)
     _log("start v%s root=%s" % (HUB_VERSION, ROOT))

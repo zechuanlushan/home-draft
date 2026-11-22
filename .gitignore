@@ -1,0 +1,6 @@
+server.log
+__pycache__/
+*.pyc
+start.log
+.mcp-session/
+data/*.db-journal
