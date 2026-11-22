@@ -1215,8 +1215,10 @@ function addMcpServer() {
 function saveExt() {
   const name = $('es-name').value.trim();
   if (!name) { toast('名字不能空', 'err'); return; }
-  const isStdio = $('es-transport').value === 'stdio';
-  const s = { name, transport: isStdio ? 'stdio' : 'http', enabled: true, confirm: $('es-confirm').checked };
+  // 直接采用下拉框选择的值，不再写死 http
+  const transport = $('es-transport').value;
+  const isStdio = transport === 'stdio';
+  const s = { name, transport, enabled: true, confirm: $('es-confirm').checked };
   s.headers = {}; s.hText = '';
   if (isStdio) {
     if (!$('es-cmd').value.trim()) { toast('命令不能空', 'err'); return; }
